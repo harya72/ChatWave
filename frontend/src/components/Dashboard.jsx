@@ -1,11 +1,12 @@
-import React from 'react'
-import Navigation from './Navigation'
+import React from "react";
+import Navigation from "./Navigation";
 
 const Dashboard = () => {
   return (
-    <><Navigation/></>
-   
-  )
-}
+    <>
+      <Navigation />
+    </>
+  );
+};
 
-export default Dashboard
+export default Dashboard;

@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 
+from datetime import timedelta
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,13 +33,14 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
-    #Added
+    # Added
     "authentication",
     "rest_framework",
     "corsheaders",
     "oauth2_provider",
     "social_django",
     "drf_social_oauth2",
+    'rest_framework_simplejwt.token_blacklist',
     # /*{-------------------}*/
     "django.contrib.admin",
     "django.contrib.auth",
@@ -47,9 +50,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+# CORS_ORIGIN_ALLOW_ALL = True
 
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -72,8 +76,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect'
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -137,7 +141,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Added Manually
 
-# CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     # Add the origins (domains) that are allowed to access your API
     "http://localhost:3000",
@@ -145,28 +148,55 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost",
 ]
 
+
+
+
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
-        'drf_social_oauth2.authentication.SocialAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        "drf_social_oauth2.authentication.SocialAuthentication",
     ),
 }
 
+SIMPLE_JWT = {
+     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
+     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+     'ROTATE_REFRESH_TOKENS': True,
+     'BLACKLIST_AFTER_ROTATION': True
+}
+
+
+
 AUTHENTICATION_BACKENDS = (
     # Google OAuth2
-    'social_core.backends.google.GoogleOAuth2',
-   'drf_social_oauth2.backends.DjangoOAuth2',
-   'django.contrib.auth.backends.ModelBackend',
+    "social_core.backends.google.GoogleOAuth2",
+
+
+    # drf-social-oauth2
+    "drf_social_oauth2.backends.DjangoOAuth2",
+
+    # Django
+    "django.contrib.auth.backends.ModelBackend",
 )
 
+
+
 # Google configuration
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '832907624457-68j9c73a8msdpf4q7qpaj1jlnmfh5mhs.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = (
+    "832907624457-68j9c73a8msdpf4q7qpaj1jlnmfh5mhs.apps.googleusercontent.com"
+)
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
 
 # Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
 ]
+
+
+
+
+
