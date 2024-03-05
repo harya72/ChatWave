@@ -4,13 +4,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
+
 class HomeView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        content = {
-            "message": "Welcome to the Social Authentication (Email) page using React Js and Django!"
-        }
+        # Access the authenticated user and retrieve the username
+        username = request.user.username
+        content = {"username": username}
         return Response(content)
 
 

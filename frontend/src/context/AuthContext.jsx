@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { useUser } from "../context/UserContext";
 
 const AuthContext = createContext();
 
@@ -7,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem("access_token")
   );
+  const { updateUser } = useUser();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,13 +20,21 @@ export const AuthProvider = ({ children }) => {
               Authorization: `Bearer ${token}`,
             },
           });
+          console.log(response);
+          updateUser({
+            username: response.data.username,
+            // profilePhoto: googleUserInfo.data.picture,
+            // ... other user data
+          });
 
           login();
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Token is invalid or expired, attempt refresh
-          console.log('Token is expired or invalid, trying to refresh the token');
+          console.log(
+            "Token is expired or invalid, trying to refresh the token"
+          );
           await handleTokenRefresh();
         } else {
           console.error("Error during initial fetch:", error);
@@ -42,6 +52,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("access_token");
+    localStorage.removeItem("userData");
     localStorage.removeItem("refresh_token");
     setIsAuthenticated(false);
   };

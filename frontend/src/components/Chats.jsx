@@ -1,7 +1,9 @@
 import React from "react";
 import Chat from "./Chat";
 import MainChat from "./MainChat";
+import { useUser } from "../context/UserContext";
 const Chats = () => {
+  const { userData } = useUser();
   return (
     <div className="flex flex-1 ">
       <div className="w-80 h-screen flex flex-col  bg-[rgb(247,245,244)] shadow-2xl">
@@ -9,11 +11,15 @@ const Chats = () => {
           <div className="m-5 flex">
             <div className="m-2 mr-5 flex justify-center items-center">
               <img className="absolute" src="./assets/ellipse.png" alt="" />
-              <img src="./assets/person9.png" alt="" />
+              <img
+                src={userData ? userData.profilePhoto : "profilePhoto"}
+                className="rounded-full"
+                alt="profile_photo"
+              />
             </div>
             <div className="flex flex-col p-5">
               <span className="font-bold text-xl truncate font-inter">
-                Himanshu Arya
+                {userData ? userData.username : "username"}
               </span>
               <span className="text-[#A19791] text-sm font-inter">
                 My Account

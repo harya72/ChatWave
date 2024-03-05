@@ -4,17 +4,19 @@ import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
 import { useAuth } from "../context/AuthContext";
+import { useUser } from "../context/UserContext";
 
 const Login = () => {
   const { isAuthenticated, login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { updateUser } = useUser();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const signin = useGoogleLogin({
     onSuccess: async (response) => {
-      console.log("success: ", response.access_token);
+      console.log("success: ");
 
       const userPayload = {
         grant_type: "convert_token",
@@ -37,6 +39,21 @@ const Login = () => {
             withCredentials: true,
           }
         );
+
+        const googleUserInfo = await axios.get(
+          "https://www.googleapis.com/oauth2/v2/userinfo",
+          {
+            headers: {
+              Authorization: `Bearer ${response.access_token}`,
+            },
+          }
+        );
+
+        updateUser({
+          username: googleUserInfo.data.name,
+          profilePhoto: googleUserInfo.data.picture,
+          // ... other user data
+        });
 
         axios.defaults.headers.common[
           "Authorization"
@@ -75,6 +92,18 @@ const Login = () => {
         },
         withCredentials: true,
       });
+      // console.log(jwtDecode(data.access));
+
+      // Decode the JWT token to get user information
+      // const userPayload = jwt_decode(data.access);
+      // console.log(userPayload)
+
+      // // Update the user context with the decoded payload
+      // updateUser({
+      //   username: userPayload.username,
+      //   email: userPayload.email,
+      //   // ... other user data
+      // });
 
       // Initialize the access & refresh token in local storage.
       localStorage.clear();
