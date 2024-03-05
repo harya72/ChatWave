@@ -12,7 +12,12 @@ const Chats = () => {
             <div className="m-2 mr-5 flex justify-center items-center">
               <img className="absolute" src="./assets/ellipse.png" alt="" />
               <img
-                src={userData ? userData.profilePhoto : "profilePhoto"}
+                src={
+                  userData
+                    // ? `http://localhost:8000/${userData.profilePhoto}`
+                    ? userData.profilePhoto
+                    : null
+                }
                 className="rounded-full"
                 alt="profile_photo"
               />

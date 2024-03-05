@@ -20,10 +20,13 @@ export const AuthProvider = ({ children }) => {
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log(response);
+          // console.log(response);
+          const data = localStorage.getItem("userData");
           updateUser({
-            username: response.data.username,
-            // profilePhoto: googleUserInfo.data.picture,
+            username: data ? JSON.parse(data).username : response.data.username,
+            profilePhoto: data
+              ? JSON.parse(data).profilePhoto
+              : response.data.avatar_url,
             // ... other user data
           });
 

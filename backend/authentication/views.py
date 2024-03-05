@@ -3,17 +3,20 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from .models import UserProfile
 
 
 class HomeView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Access the authenticated user and retrieve the username
-        username = request.user.username
-        content = {"username": username}
-        return Response(content)
-
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            avatar_url = user_profile.avatar.url if user_profile.avatar else None
+            return Response({"username": request.user.username, "avatar_url": f'http://localhost:8000/{avatar_url}'})
+        except Exception as e:
+            print(f"Error fetching user profile: {str(e)}")
+            return Response({'username': str(request.user)})
 
 class LogoutView(APIView):
     permission_classes = (IsAuthenticated,)

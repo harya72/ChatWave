@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 from datetime import timedelta
@@ -40,7 +41,7 @@ INSTALLED_APPS = [
     "oauth2_provider",
     "social_django",
     "drf_social_oauth2",
-    'rest_framework_simplejwt.token_blacklist',
+    "rest_framework_simplejwt.token_blacklist",
     # /*{-------------------}*/
     "django.contrib.admin",
     "django.contrib.auth",
@@ -131,7 +132,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static/"),)
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -149,39 +155,32 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-
-
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "drf_social_oauth2.authentication.SocialAuthentication",
     ),
 }
 
 SIMPLE_JWT = {
-     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-     'ROTATE_REFRESH_TOKENS': True,
-     'BLACKLIST_AFTER_ROTATION': True
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
-
 
 
 AUTHENTICATION_BACKENDS = (
     # Google OAuth2
     "social_core.backends.google.GoogleOAuth2",
-
-
     # drf-social-oauth2
     "drf_social_oauth2.backends.DjangoOAuth2",
-
     # Django
     "django.contrib.auth.backends.ModelBackend",
 )
-
 
 
 # Google configuration
@@ -196,8 +195,3 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     "https://www.googleapis.com/auth/userinfo.profile",
 ]
 # SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE=['profile','email']
-
-
-
-
-
