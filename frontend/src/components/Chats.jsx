@@ -14,12 +14,11 @@ const Chats = () => {
               <img
                 src={
                   userData
-                    // ? `http://localhost:8000/${userData.profilePhoto}`
                     ? userData.profilePhoto
                     : null
                 }
                 className="rounded-full"
-                alt="profile_photo"
+                alt="photo"
               />
             </div>
             <div className="flex flex-col p-5">

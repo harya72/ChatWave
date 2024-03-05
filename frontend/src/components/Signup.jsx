@@ -10,6 +10,10 @@ import { Bars } from "react-loader-spinner";
 const Signup = () => {
   const [loading, setLoading] = useState(false);
   const { isAuthenticated, login } = useAuth();
+  const [firstname, setFirstName] = useState("");
+  const [lastname, setLastName] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const signin = useGoogleLogin({
     onSuccess: async (response) => {
@@ -56,6 +60,67 @@ const Signup = () => {
     },
     onError: (error) => console.log("Login Failed:", error.error_description),
   });
+  const handleSignup = async (e) => {
+    try {
+      setLoading(true);
+      e.preventDefault();
+
+      const formData = {
+        first_name: firstname,
+        last_name: lastname,
+        username: username,
+        password: password,
+      };
+
+      const response = await fetch("http://localhost:8000/signup/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        alert("User registered successfully");
+        try {
+          const user = {
+            username: username,
+            password: password,
+          };
+
+          const { data } = await axios.post(
+            "http://localhost:8000/token/",
+            user,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              withCredentials: true,
+            }
+          );
+
+          localStorage.clear();
+          localStorage.setItem("access_token", data.access);
+          localStorage.setItem("refresh_token", data.refresh);
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${data.access}`;
+          login();
+        } catch (error) {
+          alert("Error during token acquisition:", error);
+        }
+      } else {
+        // Handle registration error
+        const errorData = await response.json();
+        alert("Failed to register user: " + JSON.stringify(errorData));
+      }
+    } catch (error) {
+      alert("Error during user registration:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return isAuthenticated ? (
     <Navigate to="/dashboard" replace />
   ) : (
@@ -88,7 +153,7 @@ const Signup = () => {
                 </div>
 
                 <div className="">
-                  <form action="" className="flex flex-col gap-6">
+                  <form onSubmit={handleSignup} className="flex flex-col gap-6">
                     <div className="relative">
                       <input
                         type="text"
@@ -96,6 +161,8 @@ const Signup = () => {
                         className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         placeholder=" "
                         required
+                        value={firstname}
+                        onChange={(e) => setFirstName(e.target.value)}
                       />
                       <label
                         htmlFor="first_name"
@@ -111,6 +178,8 @@ const Signup = () => {
                         id="last_name"
                         className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         placeholder=" "
+                        value={lastname}
+                        onChange={(e) => setLastName(e.target.value)}
                       />
                       <label
                         htmlFor="last_name"
@@ -126,6 +195,8 @@ const Signup = () => {
                         id="username"
                         className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         placeholder=" "
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                       />
                       <label
                         htmlFor="username"
@@ -141,6 +212,8 @@ const Signup = () => {
                         id="password"
                         className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         placeholder=" "
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                       <label
                         htmlFor="password"

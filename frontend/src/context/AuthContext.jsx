@@ -20,8 +20,9 @@ export const AuthProvider = ({ children }) => {
               Authorization: `Bearer ${token}`,
             },
           });
-          // console.log(response);
+
           const data = localStorage.getItem("userData");
+
           updateUser({
             username: data ? JSON.parse(data).username : response.data.username,
             profilePhoto: data
@@ -53,11 +54,37 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
   };
 
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("userData");
-    localStorage.removeItem("refresh_token");
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem("refresh_token");
+      const access_token = localStorage.getItem("access_token");
+      if (token) {
+        const response = await axios.post(
+          "http://localhost:8000/logout/",
+          {
+            refresh_token: token,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${access_token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.status == 205) {
+          localStorage.clear();
+          setIsAuthenticated(false);
+        }
+      } else {
+        localStorage.clear();
+        console.error("Logout failed");
+      }
+    } catch (error) {
+      localStorage.clear()
+      setIsAuthenticated(false)
+      console.error("Error during logout:", error);
+    }
   };
 
   const handleTokenRefresh = async () => {
