@@ -2,7 +2,7 @@ import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import ForgetPassword from "./components/ForgetPassword"; 
-import PasswordResetPage from "./components/PasswordReset";// Import the new component
+import PasswordResetPage from "./components/PasswordReset";
 import {
   BrowserRouter as Router,
   Route,
@@ -21,8 +21,8 @@ export default function App() {
           <Routes>
             {/* Public routes (accessible without authentication) */}
             <Route path="/signup" element={<Signup />} />
-            <Route path="/forget" element={<ForgetPassword />} /> {/* New route for password reset */}
-            <Route path="/password-reset/:uid/:token" element={<PasswordResetPage />} /> {/* New route for password reset */}
+            <Route path="/forget" element={<ForgetPassword />} />
+            <Route path="/password-reset/:uid/:token" element={<PasswordResetPage />} /> 
 
             {/* Protected routes (require authentication) */}
             <Route path="/dashboard" element={<PrivateRoute />}>

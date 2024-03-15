@@ -20,7 +20,8 @@ function ForgetPassword() {
       setLoading(false)
       alert("Password reset email sent successfully, Check your email");
     } catch (err) {
-      alert("Failed to reset password");
+      alert(err.response.data);
+      setLoading(false)
     }
   };
 

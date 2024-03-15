@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 from pathlib import Path
 
 from datetime import timedelta
@@ -23,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-hh1+tx5%&!w-p4(o@2b_&c-bka6j63i+s*klf!4jhu2uj%#1pq"
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -186,9 +190,9 @@ AUTHENTICATION_BACKENDS = (
 
 # Google configuration
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = (
-    "832907624457-68j9c73a8msdpf4q7qpaj1jlnmfh5mhs.apps.googleusercontent.com"
+    os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 )
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 # Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
@@ -199,8 +203,8 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = "smtp.gmail.com"
-EMAIL_HOST_USER = "harya72@gmail.com"
-EMAIL_HOST_PASSWORD = "apmq psto bxgp algl"
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 

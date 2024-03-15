@@ -20,9 +20,9 @@ const Login = () => {
 
       const userPayload = {
         grant_type: "convert_token",
-        client_id: "xSHDkPC5UXtCm4L3dvonchLKrn5MOPSquJFrklss",
+        client_id: import.meta.env.VITE_DJANGO_CLIENT_ID,
         client_secret:
-          "6lQgJfta5iSN1dNKTh5YxCY351q7E32sYPvhE4h8nCIw0jKPWyxk1tJOZAfRE5CIgDaqiS2RQy45okGGzH449s5PL8sfn4FJ9p2ZnUVLDQfkOlx4FBnEt5DfJifbe3ih",
+          import.meta.env.VITE_DJANGO_CLIENT_SECRET_KEY,
         backend: "google-oauth2",
         token: response.access_token,
       };
