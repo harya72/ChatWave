@@ -1,6 +1,8 @@
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
+import ForgetPassword from "./components/ForgetPassword"; 
+import PasswordResetPage from "./components/PasswordReset";// Import the new component
 import {
   BrowserRouter as Router,
   Route,
@@ -10,6 +12,7 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./context/PrivateRoute";
 import { UserProvider } from "./context/UserContext";
+
 export default function App() {
   return (
     <UserProvider>
@@ -18,6 +21,8 @@ export default function App() {
           <Routes>
             {/* Public routes (accessible without authentication) */}
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forget" element={<ForgetPassword />} /> {/* New route for password reset */}
+            <Route path="/password-reset/:uid/:token" element={<PasswordResetPage />} /> {/* New route for password reset */}
 
             {/* Protected routes (require authentication) */}
             <Route path="/dashboard" element={<PrivateRoute />}>
