@@ -35,6 +35,7 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     # Added
+    "djoser",
     "authentication",
     "rest_framework",
     "corsheaders",
@@ -195,3 +196,18 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     "https://www.googleapis.com/auth/userinfo.profile",
 ]
 # SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE=['profile','email']
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = "harya72@gmail.com"
+EMAIL_HOST_PASSWORD = "apmq psto bxgp algl"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+DOMAIN = 'localhost:5173'
+SITE_NAME = 'ChatWave'
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': 'password-reset/{uid}/{token}',
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND':True
+}
