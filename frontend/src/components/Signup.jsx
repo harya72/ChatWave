@@ -160,7 +160,7 @@ const Signup = () => {
                       <input
                         type="text"
                         id="first_name"
-                        className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         placeholder=" "
                         required
                         value={firstname}
@@ -178,7 +178,8 @@ const Signup = () => {
                         required
                         type="text"
                         id="last_name"
-                        className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        
                         placeholder=" "
                         value={lastname}
                         onChange={(e) => setLastName(e.target.value)}
@@ -195,7 +196,8 @@ const Signup = () => {
                         required
                         type="text"
                         id="username"
-                        className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+
                         placeholder=" "
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -212,7 +214,8 @@ const Signup = () => {
                         required
                         type="email"
                         id="email"
-                        className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        
                         placeholder=" "
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -229,7 +232,8 @@ const Signup = () => {
                         required
                         type="password"
                         id="password"
-                        className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        
                         placeholder=" "
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
