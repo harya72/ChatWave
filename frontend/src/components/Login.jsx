@@ -4,12 +4,10 @@ import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
 import { useAuth } from "../context/AuthContext";
-import { useUser } from "../context/UserContext";
 
 const Login = () => {
   const { isAuthenticated, login } = useAuth();
   const [loading, setLoading] = useState(false);
-  const { updateUser } = useUser();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -21,8 +19,7 @@ const Login = () => {
       const userPayload = {
         grant_type: "convert_token",
         client_id: import.meta.env.VITE_DJANGO_CLIENT_ID,
-        client_secret:
-          import.meta.env.VITE_DJANGO_CLIENT_SECRET_KEY,
+        client_secret: import.meta.env.VITE_DJANGO_CLIENT_SECRET_KEY,
         backend: "google-oauth2",
         token: response.access_token,
       };
@@ -39,21 +36,6 @@ const Login = () => {
             withCredentials: true,
           }
         );
-
-        const googleUserInfo = await axios.get(
-          "https://www.googleapis.com/oauth2/v2/userinfo",
-          {
-            headers: {
-              Authorization: `Bearer ${response.access_token}`,
-            },
-          }
-        );
-
-        updateUser({
-          username: googleUserInfo.data.name,
-          profilePhoto: googleUserInfo.data.picture,
-          // ... other user data
-        });
 
         axios.defaults.headers.common[
           "Authorization"
@@ -186,7 +168,10 @@ const Login = () => {
                     </div>
 
                     <span className="mt-8">
-                    <Link className="text-white hover:text-gray-600" to="/forget">
+                      <Link
+                        className="text-white hover:text-gray-600"
+                        to="/forget"
+                      >
                         Forget Password
                       </Link>
                     </span>

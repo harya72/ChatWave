@@ -3,10 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import UserProfile
 from rest_framework.permissions import AllowAny
 from .serializers import UserSerializer
-from django.contrib.auth.models import User
 
 
 class HomeView(APIView):
@@ -14,36 +12,29 @@ class HomeView(APIView):
 
     def get(self, request):
         try:
-            if hasattr(
-                request.user, "userprofile"
-            ):  # Check if the user has a UserProfile
-                user_profile = request.user.userprofile
-                if user_profile.avatar:
-                    avatar_url = user_profile.avatar.url
-                else:
-                    avatar_url = "media/avatars/blank.png"
+            user = request.user
+            if hasattr(user, "thumbnail") and user.thumbnail:
                 return Response(
                     {
-                        "username": request.user.username,
-                        "avatar_url": f"http://localhost:8000/{avatar_url}",
-                        "message": "hi from userProfile",
+                        "avatar_url": f"http://localhost:8000{user.thumbnail.url}",
+                        "username": user.first_name,
+                        "message":"You have the image buddy"
                     }
                 )
             else:
-                user = User.objects.get(username=request.user.username)
                 return Response(
                     {
-                        "username": user.username,
+                        "username": user.first_name,
                         "email": user.email,
-                        "message": "hi from jwt/google",
-                        "avatar_url": f"http://localhost:8000/media/avatars/blank.png",
+                        "message": "You dont have image buddy",
+                        "avatar_url": "http://localhost:8000/media/avatars/blank.png",
                     }
                 )
 
         except Exception as e:
             print(f"Error fetching user profile: {str(e)}")
             return Response(
-                {"username": str(request.user), "message": "hi from google oauth"}
+                {"error":e}
             )
 
 

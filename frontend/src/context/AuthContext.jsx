@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
-import { useUser } from "../context/UserContext";
 
 const AuthContext = createContext();
 
@@ -8,7 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem("access_token")
   );
-  const { updateUser } = useUser();
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,14 +20,10 @@ export const AuthProvider = ({ children }) => {
             },
           });
 
-          const data = localStorage.getItem("userData");
-
-          updateUser({
-            username: data ? JSON.parse(data).username : response.data.username,
-            profilePhoto: data
-              ? JSON.parse(data).profilePhoto
-              : response.data.avatar_url,
-            // ... other user data
+          setUserData({
+            username: response.data.username,
+            profilePhoto: response.data.avatar_url,
+            //   // ... other user data
           });
 
           login();
@@ -81,8 +76,8 @@ export const AuthProvider = ({ children }) => {
         console.error("Logout failed");
       }
     } catch (error) {
-      localStorage.clear()
-      setIsAuthenticated(false)
+      localStorage.clear();
+      setIsAuthenticated(false);
       console.error("Error during logout:", error);
     }
   };
@@ -118,7 +113,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, userData }}>
       {children}
     </AuthContext.Provider>
   );

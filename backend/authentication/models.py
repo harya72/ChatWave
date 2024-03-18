@@ -1,12 +1,16 @@
 from django.db import models
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+def upload_thumbnail(instance, filename):
+    path = f"thumbnails/{instance.username}"
+    extension = filename.split(".")[-1]
+    if extension:
+        path = path + "." + extension
+    return path
 
-    def __str__(self):
-        return str(self.user)
+
+class User(AbstractUser):
+    thumbnail = models.ImageField(upload_to=upload_thumbnail, null=True, blank=True)

@@ -1,9 +1,9 @@
 import React from "react";
 import Chat from "./Chat";
 import MainChat from "./MainChat";
-import { useUser } from "../context/UserContext";
+import { useAuth } from "../context/AuthContext";
 const Chats = () => {
-  const { userData } = useUser();
+  const { userData } = useAuth();
   return (
     <div className="flex flex-1 ">
       <div className="w-80 h-screen flex flex-col  bg-[rgb(247,245,244)] shadow-2xl">
