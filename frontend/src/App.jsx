@@ -11,10 +11,11 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./context/PrivateRoute";
-
+import { WebSocketProvider } from './context/WebSocketContext';
 export default function App() {
   return (
       <AuthProvider>
+        <WebSocketProvider>
         <Router>
           <Routes>
             {/* Public routes (accessible without authentication) */}
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
           </Routes>
         </Router>
+        </WebSocketProvider>
       </AuthProvider>
   );
 }

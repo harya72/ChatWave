@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
               Authorization: `Bearer ${token}`,
             },
           });
-
+          console.log(response)
           setUserData({
             username: response.data.username,
             profilePhoto: response.data.avatar_url,
