@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from .serializers import UserSerializer
+from oauth2_provider.models import AccessToken
 
 
 class HomeView(APIView):
@@ -12,6 +13,11 @@ class HomeView(APIView):
 
     def get(self, request):
         try:
+            token = AccessToken.objects.get(token="p4U1gxbMnLGAWua0FrD8aJ3ZYviVWj")
+            print("""
+                  Here i am trying to get the AccessToken object
+                   from the views and it is working perfectly fine
+                  i can get the user associated with it easily :""",token.user)
             user = request.user
             if hasattr(user, "thumbnail") and user.thumbnail:
                 return Response(
