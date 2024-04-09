@@ -13,11 +13,6 @@ class HomeView(APIView):
 
     def get(self, request):
         try:
-            token = AccessToken.objects.get(token="p4U1gxbMnLGAWua0FrD8aJ3ZYviVWj")
-            print("""
-                  Here i am trying to get the AccessToken object
-                   from the views and it is working perfectly fine
-                  i can get the user associated with it easily :""",token.user)
             user = request.user
             if hasattr(user, "thumbnail") and user.thumbnail:
                 return Response(

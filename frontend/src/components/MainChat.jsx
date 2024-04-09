@@ -1,16 +1,16 @@
 import React from "react";
 
-const MainChat = () => {
+const MainChat = ({user}) => {
   return (
     <div className="  flex-1 flex-col h-screen dsff  flex   ">
       <div className="p-2 flex  h-24 shadow-md ">
         <div className="m-2  flex justify-center w-20 h-20 items-center ">
           <img className="absolute" src="./assets/ellipse_active.png" alt="" />
-          <img src="./assets/person1.png" className="" alt="" />
+          <img src={`http://127.0.0.1:8000${user.thumbnail_url}`} className="" alt="person_profile" />
         </div>
         <div className=" flex-col p-5">
           <span className="font-bold text-xl truncate font-inter">
-            Trilokesh Singh
+            {user.first_name} {user.last_name}
           </span>
         </div>
         <div className=" flex flex-1 justify-end items-center gap-5">
@@ -29,11 +29,11 @@ const MainChat = () => {
             <p className="font-inter text-center">Yesterday</p>
             <div className="flex gap-3 ">
               <div>
-                <img src="./assets/person1.png" alt="" />
+                <img src={`http://127.0.0.1:8000${user.thumbnail_url}`} alt="person_profile" />
               </div>
               <div className="w-full ">
                 <span className="font-inter font-semibold mt-2 m-2">
-                  Trilokesh Singh
+                {user.first_name} {user.last_name}
                 </span>
                 <span className="font-inter text-xs self-center  text-[#A19791]">
                   09:03pm

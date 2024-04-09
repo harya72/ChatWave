@@ -13,7 +13,7 @@ export const WebSocketProvider = ({ children }) => {
     if (isAuthenticated) {
       const access_token = localStorage.getItem("access_token");
       const socket = new WebSocket(
-        `ws://127.0.0.1:8000/chat/?token_type=google&token=${access_token}`
+        `ws://127.0.0.1:8000/chat/?token_type=jwt&token=${access_token}`
       );
 
       socket.onopen = () => {
@@ -50,8 +50,22 @@ export const WebSocketProvider = ({ children }) => {
     }
   }, [isAuthenticated]);
 
+  const fetchUserList = (query) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      const message = {
+        type: 'get_user_list',
+        query: query
+      };
+      socket.send(JSON.stringify(message));
+      return socket; // Return the socket directly
+    } else {
+      console.error('WebSocket connection not open.');
+      return null;
+    }
+  };
+
   return (
-    <WebSocketContext.Provider value={socket}>
+    <WebSocketContext.Provider value={{ socket, fetchUserList }}>
       {children}
     </WebSocketContext.Provider>
   );

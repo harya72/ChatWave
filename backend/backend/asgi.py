@@ -11,10 +11,11 @@ import os
 import authentication.routing
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
-from django_channels_jwt_auth_middleware.auth import JWTAuthMiddlewareStack
+# from django_channels_jwt_auth_middleware.auth import JWTAuthMiddlewareStack
+from authentication.middlewares.CustomMiddleware import JWTAuthMiddlewareStack
 
 from django.core.asgi import get_asgi_application
-from  authentication.middlewares.CustomMiddleware import CustomAuthMiddleware
+# from  authentication.middlewares.CustomMiddleware import CustomAuthMiddleware
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 

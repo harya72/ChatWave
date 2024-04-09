@@ -4,7 +4,7 @@ const Chat = () => {
     <div className="m-1 mt-5 gap-1 overflow-y-scroll no-scrollbar">
       {data.map((person, index) => {
         return (
-          <div key={index} className="flex  pb-4 ">
+          <div key={index} className="flex pb-4 mt-5 cursor-pointer shadow-md rounded-md ">
             <div>
               <img src={person.profile_img} alt="" />
             </div>

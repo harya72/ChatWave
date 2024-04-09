@@ -1,39 +1,86 @@
-from django_channels_jwt_auth_middleware.auth import JWTAuthMiddlewareStack
-from django.http import HttpRequest
-import google.oauth2.id_token
-from google.auth.transport import requests
+import traceback
+from urllib.parse import parse_qs
 
-class CustomAuthMiddleware:
-    def __init__(self, inner):
-        self.inner = inner
-        # print('hello himanshu bhaiya from beginning')
+from channels.auth import AuthMiddlewareStack
+from channels.db import database_sync_to_async
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
+from django.db import close_old_connections
+from jwt import decode as jwt_decode
+from jwt import InvalidSignatureError, ExpiredSignatureError, DecodeError
+from oauth2_provider.models import AccessToken
+
+User = get_user_model()
+
+
+class JWTAuthMiddleware:
+    def __init__(self, app):
+        self.app = app
 
     async def __call__(self, scope, receive, send):
-        print('hello himanshu bhaiya 1st')
+        close_old_connections()
+        try:
+            query_params = parse_qs(scope["query_string"].decode("utf8"))
+            token_type = query_params.get('token_type', [''])[0]
+            token_value = query_params.get('token', [''])[0]
+            if token_type == 'jwt':
+                # Handle JWT token
+                jwt_payload = self.get_payload(token_value)
+                user_credentials = self.get_user_credentials(jwt_payload)
+                user = await self.get_logged_in_user(user_credentials)
+                scope['user'] = user
+            elif token_type == 'google':
+                # Handle Google OAuth token
+                # import pdb
+                access_token = await self.get_access_token(token_value)
+                print('my user id',access_token.user_id)
+                if access_token:
+                    user_id = access_token.user_id
+                    try:
+                        user = await self.get_logged_in_user(user_id)
+                    except User.DoesNotExist:
+                        user = AnonymousUser()
+                else:
+                    user = AnonymousUser()
 
-        # Check if the token is a JWT token
-        if 'jwt_token' in scope:
-            print('hello himanshu bhaiya 2nd')
+                scope['user'] = user
+        except (InvalidSignatureError, KeyError, ExpiredSignatureError, DecodeError):
+            traceback.print_exc()
+            scope['user'] = AnonymousUser()
+        except:
+            scope['user'] = AnonymousUser()
+        return await self.app(scope, receive, send)
+    
 
-            # Handle JWT token validation using django_channels_jwt_auth_middleware
-            jwt_middleware = JWTAuthMiddlewareStack(inner=self.inner)
-            return await jwt_middleware(scope, receive, send)
-        # If not a JWT token, assume it's a Google OAuth token
-        elif 'google_token' in scope:
-            print('hello himanshu bhaiya from google')
+    def get_payload(self, jwt_token):
+        payload = jwt_decode(
+            jwt_token, settings.SECRET_KEY, algorithms=["HS256"])
+        return payload
 
-            google_token = scope['google_token']
-            # Validate Google OAuth token
-            try:
-                id_info = google.oauth2.id_token.verify_oauth2_token(
-                    google_token, requests.Request())
-                # Extract user information from id_info
-                user_id = id_info['sub']
-                # Perform authentication checks and set user in scope
-                scope['user'] = user_id
-            except Exception as e:
-                # Handle token validation errors
-                pass
-        # Call the next middleware in the stack
-        print("kuch kaam nhi kr rha")
-        return await self.inner(scope, receive, send)
+    def get_user_credentials(self, payload):
+        """
+        Method to get user credentials from JWT token payload.
+        Defaults to user ID.
+        """
+        user_id = payload['user_id']
+        return user_id
+
+    @database_sync_to_async
+    def get_logged_in_user(self, user_id):
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return AnonymousUser()
+        
+    @database_sync_to_async
+    def get_access_token(self, access_token):
+        try:
+            return AccessToken.objects.get(token=access_token)
+        except AccessToken.DoesNotExist:
+            print("Access token not found:", access_token)
+            return None
+
+
+def JWTAuthMiddlewareStack(app):
+    return JWTAuthMiddleware(AuthMiddlewareStack(app))
