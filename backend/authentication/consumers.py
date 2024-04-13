@@ -7,6 +7,7 @@ from django.db.models import Q
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         user = self.scope['user']
+        print('my username is:',user)
         if not user.is_authenticated:
             return
         self.username = user.username
@@ -22,6 +23,7 @@ class ChatConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         data = json.loads(text_data)
+        data_source = data.get('source')
         message_type = data.get('type', '')
         if message_type == 'get_user_list':
             query = data.get('query', '')
@@ -40,7 +42,24 @@ class ChatConsumer(WebsocketConsumer):
                 'type': 'user_list',
                 'users': user_list
             }))
+        elif data_source == 'realtime':
+            # Send message to room group
+            self.sending_receiving(data)
 
+    
+    def sending_receiving(self,data):
+        print('my data is from server',data)
+        receiver=data.get('receiver')
+        sender= data.get('sender')
+        if(sender==str(self.scope['user'])):
+            self.send_group(receiver,'realtime',data)
+            print('no i am running buddy')
+            return
+        print('i am running buddy')
+        self.send_group(sender,'realtime',data)
+        # print('done')
+        # self.send_group(sender,'realtime',data)
+        # print('done too')
     def get_filtered_users(self, query):
         if query:
             users = User.objects.filter(
@@ -50,3 +69,30 @@ class ChatConsumer(WebsocketConsumer):
             users = User.objects.all()
 
         return users
+    
+    def send_group(self,group,source,data):
+        response = {
+			'type': 'broadcast_group',
+			'source': source,
+			'data': data
+		}
+        async_to_sync(self.channel_layer.group_send)(
+            group,response
+        )
+
+    def broadcast_group(self,data):
+        '''
+		data:
+			- type: 'broadcast_group'
+			- source: where it originated from
+			- data: what ever you want to send as a dict
+		'''
+        data.pop('type')
+		
+        '''
+		return data:
+			- source: where it originated from
+			- data: what ever you want to send as a dict
+		'''
+        self.send(text_data=json.dumps(data))
+    

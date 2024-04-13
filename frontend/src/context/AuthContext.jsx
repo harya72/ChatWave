@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
           setUserData({
             username: response.data.username,
             profilePhoto: response.data.avatar_url,
+            user:response.data.user
             //   // ... other user data
           });
 
