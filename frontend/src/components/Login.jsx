@@ -14,7 +14,7 @@ const Login = () => {
 
   const signin = useGoogleLogin({
     onSuccess: async (response) => {
-      console.log("success: ");
+      console.log("success: ",response);
 
       const userPayload = {
         grant_type: "convert_token",

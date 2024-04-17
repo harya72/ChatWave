@@ -39,6 +39,7 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     # Added
+    'daphne',
     "djoser",
     "authentication",
     "rest_framework",
@@ -89,7 +90,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
+# WSGI_APPLICATION = "backend.wsgi.application"
+ASGI_APPLICATION = 'backend.asgi.application'
 
 
 # Database
@@ -217,3 +219,10 @@ DJOSER = {
 }
 
 AUTH_USER_MODEL='authentication.User'
+
+# Channel Configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer"
+    }
+}
