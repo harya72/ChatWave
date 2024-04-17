@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from "react";
-import Chat from "./Chat";
 import MainChat from "./MainChat";
 import { useAuth } from "../context/AuthContext";
 import { useWebSocket } from "../context/WebSocketContext";
-import { Link } from 'react-router-dom';
-import data from "../data/data";
 const Chats = () => {
   const { userData } = useAuth();
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
-  const { fetchUserList } = useWebSocket();
+  const { fetchUserList, socket, conversationList } = useWebSocket();
   const [showMainChat, setShowMainChat] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
-  // useEffect(() => {
-  //   if (query) {
-  //     fetchUserList(query);
-  //   }
-  // }, [query]);
 
   useEffect(() => {
     const handleMessage = (event) => {
@@ -96,57 +87,86 @@ const Chats = () => {
             <ul>
               {users.map((user) => (
                 <li key={user.id}>
-                  <div className="flex mt-5 cursor-pointer shadow-md rounded-md"  onClick={()=>{
-                    setShowMainChat(true)
-                    setSelectedUser(user)
-                }}>
-                  {user.thumbnail_url ? (
-                    <img
-                      src={`http://127.0.0.1:8000${user.thumbnail_url}`}
-                      alt="profile_photo"
-                    />
-                  ) : (
-                    <img
-                      className="rounded-full"
-                      src={`http://127.0.0.1:8000/media/avatars/blank.png`}
-                      alt="profile_photo"
-                    />
-                  )}
-                  
-                  <span className="p-2 font-inter font-semibold">{user.first_name} {user.last_name}</span>
+                  <div
+                    className="flex mt-5 cursor-pointer shadow-md rounded-md"
+                    onClick={() => {
+                      setShowMainChat(true);
+                      setSelectedUser(user);
+                    }}
+                  >
+                    {user.thumbnail_url ? (
+                      <img
+                        src={`http://127.0.0.1:8000${user.thumbnail_url}`}
+                        alt="profile_photo"
+                      />
+                    ) : (
+                      <img
+                        className="rounded-full"
+                        src={`http://127.0.0.1:8000/media/avatars/blank.png`}
+                        alt="profile_photo"
+                      />
+                    )}
+
+                    <span className="p-2 font-inter font-semibold">
+                      {user.first_name} {user.last_name}
+                    </span>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
             <div className="m-1 mt-5 gap-1 overflow-y-scroll no-scrollbar">
-      {data.map((person, index) => {
-        return (
-          <div key={index} className="flex pb-4 mt-5 cursor-pointer shadow-md rounded-md " onClick={()=>{setShowMainChat(true)
-          console.log('oh yeah')
-          setSelectedUser(person)}}>
-            <div>
-              <img src={person.profile_img} alt="" />
+              {conversationList.map((person, index) => {
+                const formatedTimeString = new Date(person.last_message.time);
+                const formattedTime = formatedTimeString.toLocaleString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                });
+                return (
+                  <div
+                    key={index}
+                    className="flex pb-4 mt-5 cursor-pointer shadow-md rounded-md "
+                    onClick={() => {
+                      setShowMainChat(true);
+                      setSelectedUser(person);
+                    }}
+                  >
+                    <div>
+                    {person.thumbnail_url ? (
+                      <img
+                        src={`http://127.0.0.1:8000${person.thumbnail_url}`}
+                        alt="profile_photo"
+                      />
+                    ) : (
+                      <img
+                        className="rounded-full"
+                        src={`http://127.0.0.1:8000/media/avatars/blank.png`}
+                        alt="profile_photo"
+                      />
+                    )}
+                    </div>
+                    <div className="flex justify-between flex-1 ml-2">
+                      <div className="font-inter font-semibold flex flex-col gap-2 mt-1">
+                        <span>{person.username}</span>
+                        <span className="text-[#A19791] text-sm font-normal">
+                          {person.last_message.text
+                            ? `${person.last_message.text}`
+                            : null}
+                        </span>
+                      </div>
+                      {person.last_message.time ? (
+                        <div className=" text-[#A19791]  h-5  self-start pt-2 font-public-sans text-xs">
+                          {formattedTime}
+                        </div>
+                      ) : (
+                        <></>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex justify-between flex-1 ml-2">
-              <div className="font-inter font-semibold flex flex-col gap-2 mt-1">
-                <span>{person.first_name}</span>
-                <span className="text-[#A19791] text-xs font-normal">
-                  {person.typing ? `${person.first_name} is typing` : null}
-                </span>
-              </div>
-              {person.new_messages > 0 ? (
-                <div className="bg-[#FF731D] text-white w-5 h-5 rounded-full flex items-center justify-center self-center font-public-sans text-xs">
-                  {person.new_messages}
-                </div>
-              ) : (
-                <></>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
           )}
         </div>
       </div>

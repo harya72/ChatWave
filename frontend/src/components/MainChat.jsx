@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useWebSocket } from "../context/WebSocketContext";
 import { useAuth } from "../context/AuthContext";
-import { createRoot } from "react-dom/client";
 
 const MainChat = ({ user }) => {
   const [message, setMessage] = useState("");
@@ -10,12 +9,19 @@ const MainChat = ({ user }) => {
   const [turn, setTurn] = useState(true);
   const [receivedMsg, setReceivedMsg] = useState("");
   const chatContainerRef = useRef(null);
+  const [messageList, setMessageList] = useState([]);
 
   useEffect(() => {
     const container = chatContainerRef.current;
     container.scrollTop = container.scrollHeight;
   });
-  const SendMsgComponent = () => {
+  const SendMsgComponent = ({ message, time }) => {
+    const formatedTimeString = new Date(time);
+    const formattedTime = formatedTimeString.toLocaleString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
     return (
       <div>
         {!turn ? (
@@ -24,43 +30,68 @@ const MainChat = ({ user }) => {
               <div className="flex justify-end">
                 <span className="font-inter font-semibold mt-2 m-2">You</span>
                 <span className="font-inter text-xs self-center text-[#A19791]">
-                  09:03pm
+                  {formattedTime}
                 </span>
               </div>
             </div>
             <div>
-              <img src="./assets/person9.png" alt="" />
+            {user.thumbnail_url?<img
+              src={`http://127.0.0.1:8000${user.thumbnail_url}`}
+              alt="person_profile"
+            />:
+            <img
+            className="rounded-full"
+            src={`http://127.0.0.1:8000/media/avatars/blank.png`}
+            alt="profile_photo"
+          />}
             </div>
           </div>
         ) : (
           <></>
         )}
-        <div className="flex-wrap-reverse flex flex-col">
-          <p
-            className="max-w-72 min-h-10 flex items-center px-2 text-white font-inter m-2 text-sm bg-[#FF731D] rounded-md"
-          >
+        <div className="flex-row-reverse flex max-w-full">
+          <div className="flex-row-reverse flex">
+            <span className="font-inter text-xs self-center text-[#A19791]">
+              {formattedTime}
+            </span>
+            {/* <span className="font-inter font-semibold m-1 mx-2">You</span> */}
+          </div>
+
+          <div className="max-w-[50%] min-w-40 flex flex-wrap min-h-10 items-center px-2 text-white font-inter m-2 text-sm bg-[#FF731D] rounded-md">
             {message}
-          </p>
+          </div>
         </div>
       </div>
     );
   };
 
-  const ReceivingMsg = () => {
+  const ReceivingMsg = ({ message, time }) => {
+    const formatedTimeString = new Date(time);
+    const formattedTime = formatedTimeString.toLocaleString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
     return (
       <div>
         {turn ? (
           <div>
-            <img
+            {user.thumbnail_url?<img
               src={`http://127.0.0.1:8000${user.thumbnail_url}`}
               alt="person_profile"
-            />
+            />:
+            <img
+            className="rounded-full"
+            src={`http://127.0.0.1:8000/media/avatars/blank.png`}
+            alt="profile_photo"
+          />}
+            
             <div className="w-full">
               <span className="font-inter font-semibold mt-2 m-2">
-                {user.first_name} {user.last_name}
+                {user.username}
               </span>
               <span className="font-inter text-xs self-center text-[#A19791]">
-                09:03pm
+                {formattedTime}
               </span>
             </div>
           </div>
@@ -68,15 +99,38 @@ const MainChat = ({ user }) => {
           <></>
         )}
         <div>
-          <p
-            className="max-w-72 min-h-10 flex items-center px-2 font-inter m-2 text-sm bg-[#F7F5F4] rounded-md"
-          >
-            {receivedMsg}
-          </p>
+          <div className="max-w-[40%] flex flex-wrap min-h-10  items-center px-2 font-inter m-2 text-sm bg-[#F7F5F4] rounded-md">
+            {message}
+          </div>
         </div>
       </div>
     );
   };
+
+  useEffect(() => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      console.log("my username:", userData.user);
+      console.log("his username:", user.username);
+      socket.send(
+        JSON.stringify({
+          source: "get_messages",
+          receiver: user.username,
+          sender: userData.user,
+        })
+      );
+    }
+    const handleMessageList = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.source === "get_messages") {
+        console.log(data);
+        setMessageList(data.data);
+      }
+    };
+
+    if (socket) {
+      socket.addEventListener("message", handleMessageList);
+    }
+  }, []);
 
   const sendMessage = () => {
     if (socket && socket.readyState === WebSocket.OPEN && message != "") {
@@ -88,15 +142,18 @@ const MainChat = ({ user }) => {
           sender: userData.user,
         })
       );
-      if (message != "") {
-        const container = document.getElementById("chat-container");
-        const customComponent = document.createElement("div");
-        container.appendChild(customComponent);
-        const root = createRoot(customComponent);
-        root.render(<SendMsgComponent />);
-        setTurn(true);
-        setMessage("");
-      }
+      // Update message list with the new message
+      setMessageList((prevMessages) => [
+        ...prevMessages,
+        {
+          message: message,
+          sent_by: userData.user,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+      setMessage("");
+      // setTurn(true)
+
       return socket;
     } else {
       console.error("WebSocket connection not open.");
@@ -119,28 +176,37 @@ const MainChat = ({ user }) => {
 
   useEffect(() => {
     if (receivedMsg != "") {
-      const container = document.getElementById("chat-container");
-      const customComponent = document.createElement("div");
-      container.appendChild(customComponent);
-      const root = createRoot(customComponent);
-      root.render(<ReceivingMsg />);
+      // Update message list with the new message
+      setMessageList((prevMessages) => [
+        ...prevMessages,
+        {
+          message: receivedMsg,
+          sent_by: user.username,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
     }
-    setTurn(false);
+    // setTurn(false);
   }, [receivedMsg]);
   return (
     <div className="  flex-1 flex-col h-screen dsff  flex   ">
       <div className="p-2 flex  h-24 shadow-md ">
         <div className="m-2  flex justify-center w-20 h-20 items-center ">
           <img className="absolute" src="./assets/ellipse_active.png" alt="" />
-          <img
+          {user.thumbnail_url?<img
             src={`http://127.0.0.1:8000${user.thumbnail_url}`}
-            className=""
+            className="rounded-full"
             alt="person_profile"
-          />
+          />:<img
+          src={`http://127.0.0.1:8000/media/avatars/blank.png`}
+          className="rounded-full"
+          alt="person_profile"
+        />}
+          
         </div>
         <div className=" flex-col p-5">
           <span className="font-bold text-xl truncate font-inter">
-            {user.first_name} {user.last_name}
+            {user.username}
           </span>
         </div>
         <div className=" flex flex-1 justify-end items-center gap-5">
@@ -153,10 +219,38 @@ const MainChat = ({ user }) => {
         </div>
       </div>
 
-      <div className="overflow-y-scroll no-scrollbar h-full scroll-bottom" ref={chatContainerRef}>
+      <div
+        className="overflow-y-scroll no-scrollbar h-full scroll-bottom"
+        ref={chatContainerRef}
+      >
         <div className=" p-2 h-full flex flex-col justify-between ">
           <div id="chat-container">
-            <p className="font-inter text-center">Yesterday</p>
+            {/* <p className="font-inter text-center">Yesterday</p> */}
+            {messageList ? (
+              <>
+                {messageList.map((item, index) => {
+                  if (item.sent_by === user.username) {
+                    return (
+                      <ReceivingMsg
+                        key={index}
+                        message={item.message}
+                        time={item.timestamp}
+                      />
+                    );
+                  } else {
+                    return (
+                      <SendMsgComponent
+                        key={index}
+                        message={item.message}
+                        time={item.timestamp}
+                      />
+                    );
+                  }
+                })}
+              </>
+            ) : (
+              <></>
+            )}
           </div>
         </div>
       </div>

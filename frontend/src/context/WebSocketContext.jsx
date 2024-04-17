@@ -7,7 +7,8 @@ export const useWebSocket = () => useContext(WebSocketContext);
 
 export const WebSocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated,userData } = useAuth();
+  const [conversationList,setConversationList] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,6 +23,11 @@ export const WebSocketProvider = ({ children }) => {
 
       socket.onmessage = (event) => {
         console.log("Received message:", event.data);
+        const data = JSON.parse(event.data)
+        if(data.source==='conversation_list'){
+          console.log('my list:',data.data);
+          setConversationList(data.data);
+        }
       };
 
       socket.onerror = (error) => {
@@ -50,6 +56,18 @@ export const WebSocketProvider = ({ children }) => {
     }
   }, [isAuthenticated]);
 
+  // Effect to send the message when userData changes
+  useEffect(() => {
+    if (userData && socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          source: "conversation_list",
+          username: userData.user
+        })
+      );
+    }
+  }, [userData]);
+
   const fetchUserList = (query) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
       const message = {
@@ -65,7 +83,7 @@ export const WebSocketProvider = ({ children }) => {
   };
 
   return (
-    <WebSocketContext.Provider value={{ socket, fetchUserList }}>
+    <WebSocketContext.Provider value={{ socket, fetchUserList,conversationList }}>
       {children}
     </WebSocketContext.Provider>
   );
