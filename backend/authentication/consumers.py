@@ -144,7 +144,7 @@ class ChatConsumer(WebsocketConsumer):
         )
         all_messages = list(messages_sent_by_sender) + list(message_sent_by_receiver)
         ordered_messages = sorted(all_messages, key=lambda message: message.timestamp)
-        response = []
+        response = [sender,receiver]
         for message in ordered_messages:
             if str(message.sender) == sender:
                 message_info = {

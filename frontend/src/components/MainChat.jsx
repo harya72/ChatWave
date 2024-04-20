@@ -7,7 +7,7 @@ const MainChat = ({ user }) => {
   const { socket } = useWebSocket();
   const { userData } = useAuth();
   const [turn, setTurn] = useState(true);
-  const [receivedMsg, setReceivedMsg] = useState("");
+  const [receivedMsg, setReceivedMsg] = useState({});
   const chatContainerRef = useRef(null);
   const [messageList, setMessageList] = useState([]);
 
@@ -109,8 +109,6 @@ const MainChat = ({ user }) => {
 
   useEffect(() => {
     if (socket && socket.readyState === WebSocket.OPEN) {
-      console.log("my username:", userData.user);
-      console.log("his username:", user.username);
       socket.send(
         JSON.stringify({
           source: "get_messages",
@@ -122,15 +120,16 @@ const MainChat = ({ user }) => {
     const handleMessageList = (event) => {
       const data = JSON.parse(event.data);
       if (data.source === "get_messages") {
-        console.log(data);
-        setMessageList(data.data);
+        if(data.data[1]===user.username){
+          setMessageList(data.data);
+        }
       }
     };
 
     if (socket) {
       socket.addEventListener("message", handleMessageList);
     }
-  }, []);
+  }, [user]);
 
   const sendMessage = () => {
     if (socket && socket.readyState === WebSocket.OPEN && message != "") {
@@ -165,14 +164,23 @@ const MainChat = ({ user }) => {
       const data = JSON.parse(event.data);
       if (data.source === "realtime") {
         console.log("this is my data:", data.data.message);
-        setReceivedMsg(data.data.message);
+        setReceivedMsg({
+          message: data.data.message,
+          sender: data.data.sender 
+        });
       }
     };
 
     if (socket) {
       socket.addEventListener("message", handleMessage);
     }
-  }, []);
+    return () => {
+      // Cleanup function to remove event listener when component unmounts
+      if (socket) {
+        socket.removeEventListener("message", handleMessage);
+      }
+    };
+  }, [socket]);
 
   useEffect(() => {
     if (receivedMsg != "") {
@@ -180,8 +188,8 @@ const MainChat = ({ user }) => {
       setMessageList((prevMessages) => [
         ...prevMessages,
         {
-          message: receivedMsg,
-          sent_by: user.username,
+          message: receivedMsg.message,
+          sent_by: receivedMsg.sender,
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -237,7 +245,7 @@ const MainChat = ({ user }) => {
                         time={item.timestamp}
                       />
                     );
-                  } else {
+                  } if(item.sent_by === userData.user) {
                     return (
                       <SendMsgComponent
                         key={index}

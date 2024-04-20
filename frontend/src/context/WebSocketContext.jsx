@@ -25,7 +25,7 @@ export const WebSocketProvider = ({ children }) => {
         console.log("Received message:", event.data);
         const data = JSON.parse(event.data)
         if(data.source==='conversation_list'){
-          console.log('my list:',data.data);
+          // console.log('my list:',data.data);
           setConversationList(data.data);
         }
       };
