@@ -196,6 +196,17 @@ const MainChat = ({ user }) => {
     }
     // setTurn(false);
   }, [receivedMsg]);
+
+  useEffect(()=>{
+    if (userData && socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          source: "conversation_list",
+          username: userData.user
+        })
+      );
+    }
+  },[messageList])
   return (
     <div className="  flex-1 flex-col h-screen dsff  flex   ">
       <div className="p-2 flex  h-24 shadow-md ">
