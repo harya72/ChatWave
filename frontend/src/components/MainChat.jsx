@@ -14,7 +14,7 @@ const MainChat = ({ user }) => {
   useEffect(() => {
     const container = chatContainerRef.current;
     container.scrollTop = container.scrollHeight;
-  });
+  },[messageList]);
   const SendMsgComponent = ({ message, time }) => {
     const formatedTimeString = new Date(time);
     const formattedTime = formatedTimeString.toLocaleString("en-US", {
@@ -159,11 +159,22 @@ const MainChat = ({ user }) => {
       return null;
     }
   };
+
+  // Function to handle message_seen
+  const handleNewMessage = (sender) => {
+    if(user.username=== sender){
+      socket.send(
+        JSON.stringify({
+          source: "message_seen",
+          sender: sender
+        })
+      );
+    }
+  };
   useEffect(() => {
     const handleMessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.source === "realtime") {
-        console.log("this is my data:", data.data.message);
         setReceivedMsg({
           message: data.data.message,
           sender: data.data.sender 
@@ -199,14 +210,9 @@ const MainChat = ({ user }) => {
 
   useEffect(()=>{
     if (userData && socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(
-        JSON.stringify({
-          source: "conversation_list",
-          username: userData.user
-        })
-      );
+      handleNewMessage(user.username);
     }
-  },[messageList])
+  },[messageList,user])
   return (
     <div className="  flex-1 flex-col h-screen dsff  flex   ">
       <div className="p-2 flex  h-24 shadow-md ">
@@ -297,7 +303,6 @@ const MainChat = ({ user }) => {
               if (e.shiftKey && e.key === "Enter") {
                 setMessage(message + "\n");
               } else if (e.key === "Enter") {
-                console.log("Sending message:", message);
                 sendMessage();
 
                 setMessage("");

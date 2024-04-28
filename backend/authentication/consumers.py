@@ -1,27 +1,31 @@
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 import json
-
 from django.shortcuts import get_object_or_404
 from .models import User, Messages
 from django.db.models import Q
-from django.http import JsonResponse
 
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
-        user = self.scope["user"]
-        print("my username is:", user)
-        if not user.is_authenticated:
-            return
-        self.username = user.username
-        async_to_sync(self.channel_layer.group_add)(self.username, self.channel_name)
-        self.accept()
+        try:
+            user = self.scope["user"]
+            print("my username is:", user)
+            if not user.is_authenticated:
+                return
+            self.username = user.username
+            async_to_sync(self.channel_layer.group_add)(self.username, self.channel_name)
+            self.accept()
+        except Exception as e:
+            print("An error occurred:", str(e))
 
     def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(
+        try:
+            async_to_sync(self.channel_layer.group_discard)(
             self.username, self.channel_name
         )
+        except Exception as e:
+            print('An error occured:', str(e))
 
     def receive(self, text_data):
         data = json.loads(text_data)
@@ -49,6 +53,14 @@ class ChatConsumer(WebsocketConsumer):
             self.messages_list(data)
         elif data_source == "conversation_list":
             self.conversation_list(data)
+        elif data_source == 'message_seen':
+            self.mark_as_read(data)
+
+    def mark_as_read(self,data):
+        sender= data.get('sender')
+        message_sent_by=User.objects.get(username=sender)
+        Messages.objects.filter(sender=message_sent_by, receiver=self.scope['user']).update(is_read=True)
+        
 
     def conversation_list(self, data):
         username = data.get("username")
@@ -96,6 +108,11 @@ class ChatConsumer(WebsocketConsumer):
                 # Handle the case where there are no received messages
                 received_latest = None
 
+            # Count unread messages
+            unread_count = Messages.objects.filter(
+            receiver=user, sender=other_user, is_read=False
+            ).count()
+
             # Check which message is more recent
             if sent_latest is not None and (
                 received_latest is None
@@ -123,12 +140,14 @@ class ChatConsumer(WebsocketConsumer):
                     "user_id": other_user_id,
                     "username": other_user.username,
                     "last_message": last_message_info,
-                    "thumbnail_url" : other_user.thumbnail.url if other_user.thumbnail else None
+                    "thumbnail_url" : other_user.thumbnail.url if other_user.thumbnail else None,
+                    "unread_count": unread_count
 
 
 
                 }
                 conversation_list.append(conversation_info)
+            conversation_list.sort(key=lambda x: x['last_message']['time'], reverse=True)
         return self.send_group(username, "conversation_list", conversation_list)
 
     def messages_list(self, data):

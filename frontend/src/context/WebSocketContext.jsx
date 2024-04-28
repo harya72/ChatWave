@@ -22,7 +22,7 @@ export const WebSocketProvider = ({ children }) => {
       };
 
       socket.onmessage = (event) => {
-        console.log("Received message:", event.data);
+        // console.log("Received message:", event.data);
         const data = JSON.parse(event.data)
         if(data.source==='conversation_list'){
           // console.log('my list:',data.data);
@@ -66,7 +66,7 @@ export const WebSocketProvider = ({ children }) => {
         })
       );
     }
-  }, [userData]);
+  }, [userData,conversationList]);
 
   const fetchUserList = (query) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -83,7 +83,7 @@ export const WebSocketProvider = ({ children }) => {
   };
 
   return (
-    <WebSocketContext.Provider value={{ socket, fetchUserList,conversationList }}>
+    <WebSocketContext.Provider value={{ socket, fetchUserList,conversationList,setConversationList }}>
       {children}
     </WebSocketContext.Provider>
   );

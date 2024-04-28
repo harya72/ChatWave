@@ -118,11 +118,14 @@ const Chats = () => {
             <div className="m-1 mt-5 gap-1 overflow-y-scroll no-scrollbar">
               {conversationList.map((person, index) => {
                 const formatedTimeString = new Date(person.last_message.time);
-                const formattedTime = formatedTimeString.toLocaleString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true,
-                });
+                const formattedTime = formatedTimeString.toLocaleString(
+                  "en-US",
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  }
+                );
                 return (
                   <div
                     key={index}
@@ -133,31 +136,44 @@ const Chats = () => {
                     }}
                   >
                     <div>
-                    {person.thumbnail_url ? (
-                      <img
-                        src={`http://127.0.0.1:8000${person.thumbnail_url}`}
-                        alt="profile_photo"
-                      />
-                    ) : (
-                      <img
-                        className="rounded-full"
-                        src={`http://127.0.0.1:8000/media/avatars/blank.png`}
-                        alt="profile_photo"
-                      />
-                    )}
+                      {person.thumbnail_url ? (
+                        <img
+                          src={`http://127.0.0.1:8000${person.thumbnail_url}`}
+                          alt="profile_photo"
+                        />
+                      ) : (
+                        <img
+                          className="rounded-full"
+                          src={`http://127.0.0.1:8000/media/avatars/blank.png`}
+                          alt="profile_photo"
+                        />
+                      )}
                     </div>
                     <div className="flex justify-between flex-1 ml-2">
                       <div className="font-inter font-semibold flex flex-col gap-2 mt-1">
                         <span>{person.username}</span>
-                        <span className="text-[#A19791] text-sm font-normal">
+                        <span
+                          className={`text-[#A19791] text-sm ${
+                            person.unread_count > 0
+                              ? "font-semibold text-black"
+                              : "font-normal"
+                          }`}
+                        >
                           {person.last_message.text
                             ? `${person.last_message.text}`
                             : null}
                         </span>
                       </div>
                       {person.last_message.time ? (
-                        <div className=" text-[#A19791]  h-5  self-start pt-2 font-public-sans text-xs">
-                          {formattedTime}
+                        <div>
+                          <div className=" text-[#A19791]  h-5   pt-2 font-public-sans text-xs">
+                            {formattedTime}
+                          </div>
+                          {person.unread_count > 0 ? (
+                            <div className="bg-[#FF731D] mt-4 text-white w-5 h-5 rounded-full flex items-center justify-center self-center font-public-sans text-xs">
+                              {person.unread_count}
+                            </div>
+                          ) : null}
                         </div>
                       ) : (
                         <></>
