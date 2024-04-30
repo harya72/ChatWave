@@ -7,14 +7,16 @@ export const useWebSocket = () => useContext(WebSocketContext);
 
 export const WebSocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  const { isAuthenticated,userData } = useAuth();
-  const [conversationList,setConversationList] = useState([]);
+  const { isAuthenticated } = useAuth();
+  const [messageList, setMessageList] = useState([]);
+
 
   useEffect(() => {
     if (isAuthenticated) {
       const access_token = localStorage.getItem("access_token");
+      const token_type = localStorage.getItem('token_type');
       const socket = new WebSocket(
-        `ws://127.0.0.1:8000/chat/?token_type=jwt&token=${access_token}`
+        `ws://127.0.0.1:8000/chat/?token_type=${token_type}&token=${access_token}`
       );
 
       socket.onopen = () => {
@@ -22,12 +24,7 @@ export const WebSocketProvider = ({ children }) => {
       };
 
       socket.onmessage = (event) => {
-        // console.log("Received message:", event.data);
-        const data = JSON.parse(event.data)
-        if(data.source==='conversation_list'){
-          // console.log('my list:',data.data);
-          setConversationList(data.data);
-        }
+        console.log("Received message:", event.data);
       };
 
       socket.onerror = (error) => {
@@ -56,17 +53,33 @@ export const WebSocketProvider = ({ children }) => {
     }
   }, [isAuthenticated]);
 
-  // Effect to send the message when userData changes
   useEffect(() => {
-    if (userData && socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(
-        JSON.stringify({
-          source: "conversation_list",
-          username: userData.user
-        })
-      );
+    const handleMessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.source === "realtime") {
+        setMessageList((prevMessages) => [
+          ...prevMessages,
+          {
+            message: data.data.message,
+            sent_by: data.data.sender,
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+      }
+    };
+
+    if (socket) {
+      socket.addEventListener("message", handleMessage);
     }
-  }, [userData,conversationList]);
+    return () => {
+      // Cleanup function to remove event listener when component unmounts
+      if (socket) {
+        socket.removeEventListener("message", handleMessage);
+      }
+    };
+  }, [socket]);
+
+
 
   const fetchUserList = (query) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -83,7 +96,7 @@ export const WebSocketProvider = ({ children }) => {
   };
 
   return (
-    <WebSocketContext.Provider value={{ socket, fetchUserList,conversationList,setConversationList }}>
+    <WebSocketContext.Provider value={{ socket, fetchUserList,messageList,setMessageList}}>
       {children}
     </WebSocketContext.Provider>
   );

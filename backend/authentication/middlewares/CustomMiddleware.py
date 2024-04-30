@@ -30,7 +30,7 @@ class JWTAuthMiddleware:
                 user_credentials = self.get_user_credentials(jwt_payload)
                 user = await self.get_logged_in_user(user_credentials)
                 scope['user'] = user
-            elif token_type == 'google':
+            elif token_type == 'google-oauth':
                 # Handle Google OAuth token
                 # import pdb
                 access_token = await self.get_access_token(token_value)

@@ -48,6 +48,8 @@ class ChatConsumer(WebsocketConsumer):
         elif data_source == "realtime":
             # Send message to room group
             self.sending_receiving(data)
+        elif data_source =='message_typing':
+            self.message_typing(data)
         elif data_source == "get_messages":
             # Send messages list to the frontend
             self.messages_list(data)
@@ -61,7 +63,15 @@ class ChatConsumer(WebsocketConsumer):
         message_sent_by=User.objects.get(username=sender)
         Messages.objects.filter(sender=message_sent_by, receiver=self.scope['user']).update(is_read=True)
         
+    def message_typing(self,data):
+        print('hello')
+        user = self.scope['user']
+        recipient_username = data.get('username')
 
+        response = {
+            'username':user.username
+        }
+        self.send_group(recipient_username,'message_typing',response)
     def conversation_list(self, data):
         username = data.get("username")
         user = User.objects.get(username=username)
@@ -179,7 +189,7 @@ class ChatConsumer(WebsocketConsumer):
                 }
             response.append(message_info)
         self.send_group(sender, "get_messages", response)
-        self.send_group(receiver, "get_messages", response)
+        # self.send_group(receiver, "get_messages", response)
 
     def sending_receiving(self, data):
         receiver = data.get("receiver")
