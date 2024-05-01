@@ -168,7 +168,7 @@ const MainChat = ({ user }) => {
           <span className="font-bold text-xl truncate font-inter">
             {user.username}
           </span>
-          <div className="font-light text-sm truncate font-inter text-gray-600">
+          <div className="text-gray-800 font-semibold text-sm truncate font-inter ">
             {typingIndicator && whoIsTyping===user.username?'is typing...':<></>}
           </div>
         </div>
@@ -263,18 +263,6 @@ const MainChat = ({ user }) => {
 };
 
 const MessageTypingAnimation = () => {
-  const { setTypingIndicator } = useWebSocket();
-
-  useEffect(() => {
-    const animationTimeout = setTimeout(() => {
-      const typingTimeout = setTimeout(() => {
-        setTypingIndicator(false);
-      }, 4000); // Adjust the duration of typing animation as needed
-      return () => clearTimeout(typingTimeout);
-    }); // Adjust the delay between each typing animation as needed
-    return () => clearTimeout(animationTimeout);
-  }, []);
-
   return (
     <div className="ticontainer">
       <div className="tiblock">

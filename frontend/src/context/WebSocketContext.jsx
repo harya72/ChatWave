@@ -32,7 +32,7 @@ export const WebSocketProvider = ({ children }) => {
         if(data.source === 'message_typing'){
           setWhoIsTyping(data.data.username);
           setTypingIndicator(true);
-          console.log(data.data.username);
+          // console.log(data.data.username);
         }
       };
 
@@ -74,6 +74,7 @@ export const WebSocketProvider = ({ children }) => {
             timestamp: new Date().toISOString(),
           },
         ]);
+        setTypingIndicator(false);
       }
     };
 
@@ -87,6 +88,17 @@ export const WebSocketProvider = ({ children }) => {
       }
     };
   }, [socket]);
+
+  useEffect(() => {
+    const animationTimeout = setTimeout(() => {
+      const typingTimeout = setTimeout(() => {
+        setTypingIndicator(false);
+      }, 4000); // Adjust the duration of typing animation as needed
+      return () => clearTimeout(typingTimeout);
+    }); // Adjust the delay between each typing animation as needed
+    return () => clearTimeout(animationTimeout);
+  }, [typingIndicator]);
+
 
 
 

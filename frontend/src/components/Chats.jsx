@@ -7,13 +7,11 @@ const Chats = ({ showChat }) => {
   const { userData } = useAuth();
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
-  const { fetchUserList, socket,messageList } = useWebSocket();
+  const { fetchUserList, socket,messageList,whoIsTyping,typingIndicator } = useWebSocket();
   const [showMainChat, setShowMainChat] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const inputRef = useRef(null);
   const [conversationList, setConversationList] = useState([]);
-  
-
 
   const handleImageClick = () => {
     inputRef.current.focus();
@@ -205,8 +203,9 @@ const Chats = ({ showChat }) => {
                       )}
                     </div>
                     <div className="flex justify-between flex-1 ml-2">
-                      <div className="font-inter font-semibold flex flex-col gap-2 mt-1">
+                      <div className="font-inter font-semibold flex flex-col">
                         <span>{person.username}</span>
+                        <div className="font-semibold text-gray-800 text-sm">{(typingIndicator && whoIsTyping===person.username)?'is typing...':<></>}</div>
                         <span
                           className={`text-[#A19791] text-sm ${
                             person.unread_count > 0
