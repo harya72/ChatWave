@@ -9,6 +9,8 @@ export const WebSocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const { isAuthenticated } = useAuth();
   const [messageList, setMessageList] = useState([]);
+  const [typingIndicator,setTypingIndicator] = useState(false);
+  const [whoIsTyping,setWhoIsTyping] = useState('');
 
 
   useEffect(() => {
@@ -24,7 +26,14 @@ export const WebSocketProvider = ({ children }) => {
       };
 
       socket.onmessage = (event) => {
-        console.log("Received message:", event.data);
+        // console.log("Received message:", event.data);
+        const data=JSON.parse(event.data)
+        // console.log(data);
+        if(data.source === 'message_typing'){
+          setWhoIsTyping(data.data.username);
+          setTypingIndicator(true);
+          console.log(data.data.username);
+        }
       };
 
       socket.onerror = (error) => {
@@ -96,7 +105,7 @@ export const WebSocketProvider = ({ children }) => {
   };
 
   return (
-    <WebSocketContext.Provider value={{ socket, fetchUserList,messageList,setMessageList}}>
+    <WebSocketContext.Provider value={{ socket, fetchUserList,messageList,setMessageList,typingIndicator,setTypingIndicator,whoIsTyping}}>
       {children}
     </WebSocketContext.Provider>
   );

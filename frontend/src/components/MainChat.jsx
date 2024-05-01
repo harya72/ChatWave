@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useWebSocket } from "../context/WebSocketContext";
 import { useAuth } from "../context/AuthContext";
-import '../index.css';
+import "../index.css";
 
 const MainChat = ({ user }) => {
   const [message, setMessage] = useState("");
-  const { socket,messageList,setMessageList } = useWebSocket();
+  const { socket, messageList, setMessageList, typingIndicator, whoIsTyping } =
+    useWebSocket();
   const { userData } = useAuth();
   const chatContainerRef = useRef(null);
 
@@ -76,7 +77,7 @@ const MainChat = ({ user }) => {
     const handleMessageList = (event) => {
       const data = JSON.parse(event.data);
       if (data.source === "get_messages") {
-        if(data.data[1]===user.username){
+        if (data.data[1] === user.username) {
           setMessageList(data.data);
         }
       }
@@ -87,26 +88,17 @@ const MainChat = ({ user }) => {
     }
   }, [user]);
 
-  // useEffect(()=>{
-  //   console.log('hi')
-  //   if(message!=''){
-  //   socket.send(JSON.stringify({
-  //     source:'message_typing',
-  //     username:user.username
-  //   }))
-
-  //   const handleMessageTyping = (event) =>{
-  //     const data=JSON.parse(event.data)
-  //     // console.log('nice')
-  //     if(data.source === 'message_typing'){
-  //       console.log('oh yeah')
-  //     }
-  //   }
-  //   if (socket) {
-  //     socket.addEventListener("message", handleMessageTyping);
-  //   }
-  // }
-  // },[message])
+  useEffect(() => {
+    console.log(whoIsTyping);
+    if (message != "") {
+      socket.send(
+        JSON.stringify({
+          source: "message_typing",
+          username: user.username,
+        })
+      );
+    }
+  }, [message]);
 
   const sendMessage = () => {
     if (socket && socket.readyState === WebSocket.OPEN && message != "") {
@@ -138,7 +130,7 @@ const MainChat = ({ user }) => {
 
   // Function to handle message_seen
   const handleNewMessage = (sender) => {
-    if(user.username=== sender){
+    if (user.username === sender) {
       socket.send(
         JSON.stringify({
           source: "message_seen",
@@ -147,7 +139,7 @@ const MainChat = ({ user }) => {
       );
     }
   };
-  
+
   useEffect(() => {
     if (userData && socket && socket.readyState === WebSocket.OPEN) {
       handleNewMessage(user.username);
@@ -176,6 +168,9 @@ const MainChat = ({ user }) => {
           <span className="font-bold text-xl truncate font-inter">
             {user.username}
           </span>
+          <div className="font-light text-sm truncate font-inter text-gray-600">
+            {typingIndicator && whoIsTyping===user.username?'is typing...':<></>}
+          </div>
         </div>
         {/* <div className=" flex flex-1 justify-end items-center gap-5">
           <div className="w-[50px] h-[50px] rounded-full flex justify-center items-center bg-gray-400">
@@ -221,10 +216,11 @@ const MainChat = ({ user }) => {
               <></>
             )}
             <div className="flex flex-row">
-
-            <MessageTypingAnimation offset={0}/>
-            <MessageTypingAnimation offset={200}/>
-            <MessageTypingAnimation offset={400}/>
+              {typingIndicator && whoIsTyping===user.username ? (
+                <>
+                  <MessageTypingAnimation />
+                </>
+              ) : null}
             </div>
           </div>
         </div>
@@ -266,26 +262,27 @@ const MainChat = ({ user }) => {
   );
 };
 
-const MessageTypingAnimation = ({ offset }) => {
-  const [isTyping, setIsTyping] = useState(false);
+const MessageTypingAnimation = () => {
+  const { setTypingIndicator } = useWebSocket();
 
   useEffect(() => {
     const animationTimeout = setTimeout(() => {
-      setIsTyping(true);
       const typingTimeout = setTimeout(() => {
-        setIsTyping(false);
-      }, 8000); // Adjust the duration of typing animation as needed
+        setTypingIndicator(false);
+      }, 4000); // Adjust the duration of typing animation as needed
       return () => clearTimeout(typingTimeout);
-    },  offset); // Adjust the delay between each typing animation as needed
+    }); // Adjust the delay between each typing animation as needed
     return () => clearTimeout(animationTimeout);
-  }, [offset]);
+  }, []);
 
   return (
-    <div
-      className={`w-4 h-4 m-1 rounded-full bg-gray-700 ${
-        isTyping ? 'animate-typing' : ''
-      }`}
-    />
+    <div className="ticontainer">
+      <div className="tiblock">
+        <div className="tidot"></div>
+        <div className="tidot"></div>
+        <div className="tidot"></div>
+      </div>
+    </div>
   );
 };
 export default MainChat;

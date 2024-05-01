@@ -160,7 +160,7 @@ const Signup = () => {
                       <input
                         type="text"
                         id="first_name"
-                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         placeholder=" "
                         required
                         value={firstname}
@@ -178,7 +178,7 @@ const Signup = () => {
                         required
                         type="text"
                         id="last_name"
-                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         
                         placeholder=" "
                         value={lastname}
@@ -196,7 +196,7 @@ const Signup = () => {
                         required
                         type="text"
                         id="username"
-                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
 
                         placeholder=" "
                         value={username}
@@ -214,7 +214,7 @@ const Signup = () => {
                         required
                         type="email"
                         id="email"
-                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         
                         placeholder=" "
                         value={email}
@@ -232,7 +232,7 @@ const Signup = () => {
                         required
                         type="password"
                         id="password"
-                        className="rounded-md p-1 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                        className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
                         
                         placeholder=" "
                         value={password}
@@ -246,15 +246,15 @@ const Signup = () => {
                       </label>
                     </div>
 
-                    <button className="bg-[#FF731D] text-white rounded border border-white border-solid hover:bg-orange-700 p-2 mb-3">
+                    <button className="bg-[#FF731D] text-white rounded border border-white border-solid hover:bg-orange-700 p-1 mb-2">
                       Sign Up
                     </button>
                   </form>
-                  <div className="  flex flex-col gap-4 ">
+                  <div className="  flex flex-col gap-2 ">
                     <div className="text-center text-white">
                       or create account with
                     </div>
-                    <div className="flex  bg-white rounded-md p-2 px-5">
+                    <div className="flex  bg-white rounded-md p-1 px-5">
                       <div className="rounded-full bg-white w-8 h-8 flex justify-center ">
                         <img src="../assets/google.svg" alt="google" />
                       </div>

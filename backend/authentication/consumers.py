@@ -64,14 +64,13 @@ class ChatConsumer(WebsocketConsumer):
         Messages.objects.filter(sender=message_sent_by, receiver=self.scope['user']).update(is_read=True)
         
     def message_typing(self,data):
-        print('hello')
         user = self.scope['user']
         recipient_username = data.get('username')
 
         response = {
             'username':user.username
         }
-        self.send_group(recipient_username,'message_typing',response)
+        self.send_group(recipient_username,"message_typing",response)
     def conversation_list(self, data):
         username = data.get("username")
         user = User.objects.get(username=username)

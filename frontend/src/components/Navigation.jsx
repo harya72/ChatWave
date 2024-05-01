@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Chats from "./Chats";
-import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FiLogOut } from "react-icons/fi";
 import { Button } from "flowbite-react";
