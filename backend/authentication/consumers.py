@@ -4,6 +4,7 @@ import json
 from django.shortcuts import get_object_or_404
 from .models import User, Messages
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 
 class ChatConsumer(WebsocketConsumer):
@@ -50,7 +51,7 @@ class ChatConsumer(WebsocketConsumer):
             self.sending_receiving(data)
         elif data_source =='message_typing':
             self.message_typing(data)
-        elif data_source == "get_messages":
+        elif data_source == "get_messages" or data_source=="load_more_messages":
             # Send messages list to the frontend
             self.messages_list(data)
         elif data_source == "conversation_list":
@@ -162,18 +163,50 @@ class ChatConsumer(WebsocketConsumer):
     def messages_list(self, data):
         receiver = data.get("receiver")
         sender = data.get("sender")
+        page_number = data.get("page_number", 0)
+        page_size = data.get("page_size", 10)
+
         sender_user = User.objects.get(username=sender)
         receiver_user = User.objects.get(username=receiver)
-        messages_sent_by_sender = Messages.objects.filter(
-            sender=sender_user, receiver=receiver_user
-        )
-        message_sent_by_receiver = Messages.objects.filter(
-            sender=receiver_user, receiver=sender_user
-        )
-        all_messages = list(messages_sent_by_sender) + list(message_sent_by_receiver)
-        ordered_messages = sorted(all_messages, key=lambda message: message.timestamp)
-        response = [sender,receiver]
-        for message in ordered_messages:
+        print('hello',data)
+
+        if data.get("source") == "load_more_messages":
+            print('good')
+            last_message_timestamp = data.get("last_message_timestamp")
+            # Fetch older messages based on the last message timestamp
+            print(data.get('page_number'))
+            messages = Messages.objects.filter(
+                (Q(sender=sender_user) & Q(receiver=receiver_user)) |
+                (Q(sender=receiver_user) & Q(receiver=sender_user)),
+                timestamp__lt=last_message_timestamp
+            ).order_by('-timestamp')[page_number * page_size:(page_number + 1) * page_size]
+            print(messages,'from load_more_messsages')
+        else:
+            # Fetch initial messages
+            messages = Messages.objects.filter(
+                (Q(sender=sender_user) & Q(receiver=receiver_user)) |
+                (Q(sender=receiver_user) & Q(receiver=sender_user))
+            ).order_by('-timestamp')[page_number * page_size:(page_number + 1) * page_size]
+            print(messages,'from get_messages')
+            print('page_number',page_number)
+
+        # Pagination
+        paginator = Paginator(messages, page_size)
+        page_obj = paginator.get_page(page_number)
+        print('no of pages: ',page_obj)
+
+        # Prepare response
+        response = {
+        "sender": sender,
+        "receiver": receiver,
+        "page_number": page_obj.number,
+        "num_pages": page_obj.paginator.num_pages,
+        "has_next": page_obj.has_next(),
+        "has_previous": page_obj.has_previous(),
+        "messages": []
+        }
+
+        for message in page_obj:
             if str(message.sender) == sender:
                 message_info = {
                     "message": message.message,
@@ -186,7 +219,8 @@ class ChatConsumer(WebsocketConsumer):
                     "sent_by": receiver,
                     "timestamp": str(message.timestamp),
                 }
-            response.append(message_info)
+            response["messages"].append(message_info)
+
         self.send_group(sender, "get_messages", response)
         # self.send_group(receiver, "get_messages", response)
 

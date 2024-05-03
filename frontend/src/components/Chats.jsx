@@ -7,7 +7,17 @@ const Chats = ({ showChat }) => {
   const { userData } = useAuth();
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
-  const { fetchUserList, socket,messageList,whoIsTyping,typingIndicator } = useWebSocket();
+  const {
+    fetchUserList,
+    socket,
+    updateConversationList,
+    whoIsTyping,
+    typingIndicator,
+    setUpdateConversationList,
+    setPage,
+    page,
+    setMessageList
+  } = useWebSocket();
   const [showMainChat, setShowMainChat] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const inputRef = useRef(null);
@@ -53,27 +63,26 @@ const Chats = ({ showChat }) => {
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     const socket = handleConversationList();
 
-    if(socket){
+    if (socket) {
       socket.addEventListener("message", handleConversation);
-
     }
-     // Cleanup
-     return () => {
+    // Cleanup
+    return () => {
       if (socket) {
         socket.removeEventListener("message", handleConversation);
       }
     };
-  },[messageList])
+  }, [updateConversationList]);
 
-  const handleConversation = (event)=>{
-    const data = JSON.parse(event.data)
-        if(data.source==='conversation_list'){
-          setConversationList(data.data);
-  }
-}
+  const handleConversation = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.source === "conversation_list") {
+      setConversationList(data.data);
+    }
+  };
   return (
     <div className="flex flex-1 ">
       <div className="min-w-80 max-w-80 h-screen flex flex-col  bg-[rgb(247,245,244)] shadow-2xl">
@@ -185,7 +194,11 @@ const Chats = ({ showChat }) => {
                     className="flex pb-4 mt-5 cursor-pointer shadow-md rounded-md "
                     onClick={() => {
                       setShowMainChat(true);
-                      setSelectedUser(person);
+                      setPage(0);
+                      setSelectedUser(person)
+                      setMessageList([]);
+
+                     
                     }}
                   >
                     <div>
@@ -205,7 +218,14 @@ const Chats = ({ showChat }) => {
                     <div className="flex justify-between flex-1 ml-2">
                       <div className="font-inter font-semibold flex flex-col">
                         <span>{person.username}</span>
-                        <div className="font-semibold text-gray-800 text-sm">{(typingIndicator && whoIsTyping===person.username)?'is typing...':<></>}</div>
+                        <div className="font-semibold text-gray-800 text-sm">
+                          {typingIndicator &&
+                          whoIsTyping === person.username ? (
+                            "is typing..."
+                          ) : (
+                            <></>
+                          )}
+                        </div>
                         <span
                           className={`text-[#A19791] text-sm ${
                             person.unread_count > 0
@@ -241,7 +261,7 @@ const Chats = ({ showChat }) => {
         </div>
       </div>
       {showMainChat && selectedUser ? (
-        <MainChat user={selectedUser} />
+        <MainChat user={selectedUser}  />
       ) : (
         // (showChat) && (
         <>

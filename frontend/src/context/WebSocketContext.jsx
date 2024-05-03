@@ -11,6 +11,9 @@ export const WebSocketProvider = ({ children }) => {
   const [messageList, setMessageList] = useState([]);
   const [typingIndicator,setTypingIndicator] = useState(false);
   const [whoIsTyping,setWhoIsTyping] = useState('');
+  const [updateConversationList,setUpdateConversationList] = useState(false);
+  const [received,setReceived] = useState(false);
+  const [page,setPage] = useState(0);
 
 
   useEffect(() => {
@@ -66,15 +69,18 @@ export const WebSocketProvider = ({ children }) => {
     const handleMessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.source === "realtime") {
+        console.log('m bhi run kr rha hun')
         setMessageList((prevMessages) => [
-          ...prevMessages,
           {
             message: data.data.message,
             sent_by: data.data.sender,
             timestamp: new Date().toISOString(),
           },
+          ...prevMessages,
         ]);
         setTypingIndicator(false);
+        setUpdateConversationList((prevState)=>!prevState);
+        setReceived(prevState=>!prevState);
       }
     };
 
@@ -117,7 +123,7 @@ export const WebSocketProvider = ({ children }) => {
   };
 
   return (
-    <WebSocketContext.Provider value={{ socket, fetchUserList,messageList,setMessageList,typingIndicator,setTypingIndicator,whoIsTyping}}>
+    <WebSocketContext.Provider value={{ socket, fetchUserList,messageList,setMessageList,typingIndicator,setTypingIndicator,whoIsTyping,updateConversationList,setUpdateConversationList,received,page,setPage}}>
       {children}
     </WebSocketContext.Provider>
   );

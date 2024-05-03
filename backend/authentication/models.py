@@ -23,4 +23,5 @@ class Messages(models.Model):
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.sender.username} --> {self.receiver.username} {self.message}' 
+        formatted_time = self.timestamp.strftime("%I:%M %p")
+        return f'{self.sender.username} --> {self.receiver.username} {self.message} {formatted_time}' 

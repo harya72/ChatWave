@@ -2,18 +2,77 @@ import React, { useState, useEffect, useRef } from "react";
 import { useWebSocket } from "../context/WebSocketContext";
 import { useAuth } from "../context/AuthContext";
 import "../index.css";
+import ClipLoader from "react-spinners/ClipLoader";
 
-const MainChat = ({ user }) => {
+const MainChat = React.memo(({ user }) => {
   const [message, setMessage] = useState("");
-  const { socket, messageList, setMessageList, typingIndicator, whoIsTyping } =
-    useWebSocket();
+  const [firstLoad, setFirstLoad] = useState(true);
+  const [sent, setSent] = useState(false);
+  const {
+    socket,
+    messageList,
+    setMessageList,
+    typingIndicator,
+    whoIsTyping,
+    setUpdateConversationList,
+    received,
+    page,
+    setPage,
+  } = useWebSocket();
   const { userData } = useAuth();
+  const [hasMoreData, setHasMore] = useState(true);
   const chatContainerRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const receivingRef = useRef(null);
+
+  const handleInfiniteScroll = () => {
+    setFirstLoad(false);
+    if (hasMoreData) {
+      const chatContainer = chatContainerRef.current;
+      if (chatContainer.scrollTop == 0 && messageList.length > 0) {
+        setLoading(true);
+        const nextPage = page + 1;
+        setTimeout(() => {
+          socket.send(
+            JSON.stringify({
+              source: "load_more_messages",
+              receiver: user.username,
+              sender: userData.user,
+              last_message_timestamp: messageList[0].timestamp,
+              page_number: nextPage,
+            })
+          );
+          setPage(page + 1);
+          setLoading(false);
+          chatContainer.scrollTop += 100;
+        }, 1000);
+        console.log("bhej di mene");
+      }
+    }
+  };
 
   useEffect(() => {
-    const container = chatContainerRef.current;
-    container.scrollTop = container.scrollHeight;
-  }, [messageList]);
+    if (sent) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [sent]);
+
+
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+
+    if (firstLoad && chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+    chatContainer.addEventListener("scroll", handleInfiniteScroll);
+
+    return () => {
+      chatContainer.removeEventListener("scroll", handleInfiniteScroll);
+    };
+  }, [messageList, hasMoreData]);
+
   const SendMsgComponent = ({ message, time }) => {
     const formatedTimeString = new Date(time);
     const formattedTime = formatedTimeString.toLocaleString("en-US", {
@@ -47,7 +106,7 @@ const MainChat = ({ user }) => {
       hour12: true,
     });
     return (
-      <div>
+      <div ref={receivingRef}>
         <div>
           <div className=" max-w-[40%] inline-block min-h-10 px-2 font-inter m-2 text-sm bg-[#F7F5F4] rounded-md">
             <div className="flex justify-between">
@@ -65,20 +124,33 @@ const MainChat = ({ user }) => {
   };
 
   useEffect(() => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    console.log("on changing the user, I am running and page number is", page);
+    if (socket && socket.readyState === WebSocket.OPEN && page === 0) {
+      setHasMore(true)
       socket.send(
         JSON.stringify({
           source: "get_messages",
           receiver: user.username,
           sender: userData.user,
+          page_number: 0,
         })
       );
     }
+
     const handleMessageList = (event) => {
       const data = JSON.parse(event.data);
-      if (data.source === "get_messages") {
-        if (data.data[1] === user.username) {
-          setMessageList(data.data);
+      if (
+        data.source === "get_messages" ||
+        data.source === "load_more_messages"
+      ) {
+        if (data.data.messages.length === 0) {
+          console.log("m nhi bhej rha ab");
+          setHasMore(false);
+          return;
+        }
+        if (data.data.receiver === user.username) {
+          const newMessages = data.data.messages;
+          setMessageList((prevMessages) => [...prevMessages, ...newMessages]);
         }
       }
     };
@@ -86,10 +158,15 @@ const MainChat = ({ user }) => {
     if (socket) {
       socket.addEventListener("message", handleMessageList);
     }
-  }, [user]);
+
+    return () => {
+      if (socket) {
+        socket.removeEventListener("message", handleMessageList);
+      }
+    };
+  }, [user, page]);
 
   useEffect(() => {
-    console.log(whoIsTyping);
     if (message != "") {
       socket.send(
         JSON.stringify({
@@ -99,6 +176,22 @@ const MainChat = ({ user }) => {
       );
     }
   }, [message]);
+
+  useEffect(() => {
+    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+  }, [received]);
+
+  useEffect(() => {
+    if (
+      chatContainerRef.current.scrollTop + 32 ==
+      chatContainerRef.current.scrollHeight -
+        chatContainerRef.current.clientHeight
+    ) {
+      console.log('kuch to hua h')
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [typingIndicator]);
 
   const sendMessage = () => {
     if (socket && socket.readyState === WebSocket.OPEN && message != "") {
@@ -112,14 +205,18 @@ const MainChat = ({ user }) => {
       );
       // Update message list with the new message
       setMessageList((prevMessages) => [
-        ...prevMessages,
         {
           message: message,
           sent_by: userData.user,
           timestamp: new Date().toISOString(),
         },
+        ...prevMessages,
       ]);
       setMessage("");
+      setSent(true);
+      setTimeout(() => {
+        setSent(false);
+      }, 500);
 
       return socket;
     } else {
@@ -143,8 +240,9 @@ const MainChat = ({ user }) => {
   useEffect(() => {
     if (userData && socket && socket.readyState === WebSocket.OPEN) {
       handleNewMessage(user.username);
+      setUpdateConversationList((prevState) => !prevState);
     }
-  }, [messageList, user]);
+  }, [messageList]);
   return (
     <div className="  flex-1 flex-col h-screen dsff  flex   ">
       <div className="p-2 flex  h-24 shadow-md ">
@@ -169,60 +267,57 @@ const MainChat = ({ user }) => {
             {user.username}
           </span>
           <div className="text-gray-800 font-semibold text-sm truncate font-inter ">
-            {typingIndicator && whoIsTyping===user.username?'is typing...':<></>}
-          </div>
-        </div>
-        {/* <div className=" flex flex-1 justify-end items-center gap-5">
-          <div className="w-[50px] h-[50px] rounded-full flex justify-center items-center bg-gray-400">
-            <img src="./assets/video_call.png" alt="video_call" />
-          </div>
-          <div className="w-[50px] h-[50px] rounded-full flex justify-center items-center bg-gray-400">
-            <img src="./assets/phone.png" alt="phone" />
-          </div>
-        </div> */}
-      </div>
-
-      <div
-        className="overflow-y-scroll no-scrollbar h-full scroll-bottom"
-        ref={chatContainerRef}
-      >
-        <div className=" p-2 h-full flex flex-col justify-between ">
-          <div id="chat-container">
-            {/* <p className="font-inter text-center">Yesterday</p> */}
-            {messageList ? (
-              <>
-                {messageList.map((item, index) => {
-                  if (item.sent_by === user.username) {
-                    return (
-                      <ReceivingMsg
-                        key={index}
-                        message={item.message}
-                        time={item.timestamp}
-                      />
-                    );
-                  }
-                  if (item.sent_by === userData.user) {
-                    return (
-                      <SendMsgComponent
-                        key={index}
-                        message={item.message}
-                        time={item.timestamp}
-                      />
-                    );
-                  }
-                })}
-              </>
+            {typingIndicator && whoIsTyping === user.username ? (
+              "is typing..."
             ) : (
               <></>
             )}
-            <div className="flex flex-row">
-              {typingIndicator && whoIsTyping===user.username ? (
-                <>
-                  <MessageTypingAnimation />
-                </>
-              ) : null}
-            </div>
           </div>
+        </div>
+      </div>
+      <div
+        className="flex flex-col overflow-y-auto flex-grow  "
+        ref={chatContainerRef}
+      >
+        <div className="    flex-col-reverse flex ">
+          {/* <div className="p-2 h-full flex flex-col justify-between"> */}
+          {messageList ? (
+            <>
+              {messageList.map((item, index) => {
+                return item.sent_by === user.username ? (
+                  <ReceivingMsg
+                    key={index}
+                    message={item.message}
+                    time={item.timestamp}
+                  />
+                ) : (
+                  <SendMsgComponent
+                    key={index}
+                    message={item.message}
+                    time={item.timestamp}
+                  />
+                );
+              })}
+            </>
+          ) : (
+            <></>
+          )}
+          {loading && hasMoreData ? (
+            <div className="text-center flex  justify-center m-5">
+              <ClipLoader color="#FF731D" />
+            </div>
+          ) : (
+            <>
+              <p className="text-center text-gray-600 font-semibold">
+                {!hasMoreData && "Already on the last messages"}
+              </p>
+            </>
+          )}
+        </div>
+        <div className="flex flex-row">
+          {typingIndicator && whoIsTyping === user.username ? (
+            <MessageTypingAnimation />
+          ) : null}
         </div>
       </div>
       <div className="px-6">
@@ -260,7 +355,7 @@ const MainChat = ({ user }) => {
       </div>
     </div>
   );
-};
+});
 
 const MessageTypingAnimation = () => {
   return (
