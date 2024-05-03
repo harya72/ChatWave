@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useWebSocket } from "../context/WebSocketContext";
 import { BiUserX } from "react-icons/bi";
 const Chats = ({ showChat }) => {
-  const { userData } = useAuth();
+  const { userData, onlineList } = useAuth();
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
   const {
@@ -16,7 +16,7 @@ const Chats = ({ showChat }) => {
     setUpdateConversationList,
     setPage,
     page,
-    setMessageList
+    setMessageList,
   } = useWebSocket();
   const [showMainChat, setShowMainChat] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -188,6 +188,9 @@ const Chats = ({ showChat }) => {
                     hour12: true,
                   }
                 );
+                const isOnline = onlineList.some(
+                  (user) => user === person.username
+                );
                 return (
                   <div
                     key={index}
@@ -195,18 +198,35 @@ const Chats = ({ showChat }) => {
                     onClick={() => {
                       setShowMainChat(true);
                       setPage(0);
-                      setSelectedUser(person)
+                      setSelectedUser(person);
                       setMessageList([]);
-
-                     
                     }}
                   >
-                    <div>
+                    <div className=" mr-5 flex justify-center items-center">
                       {person.thumbnail_url ? (
-                        <img
-                          src={`http://127.0.0.1:8000${person.thumbnail_url}`}
-                          alt="profile_photo"
-                        />
+                        <>
+                          {isOnline ? (
+                            <div className="border-[3px]  border-green-500 rounded-full p-1">
+                              <img
+                                src={`http://127.0.0.1:8000${person.thumbnail_url}`}
+                                alt="profile_photo"
+                              />
+                            </div>
+                          ) : (
+                            <img
+                              src={`http://127.0.0.1:8000${person.thumbnail_url}`}
+                              alt="profile_photo"
+                            />
+                          )}
+                        </>
+                      ) : isOnline ? (
+                        <div className="border-[3px]  border-green-500 rounded-full p-1">
+                          <img
+                            className="rounded-full"
+                            src={`http://127.0.0.1:8000/media/avatars/blank.png`}
+                            alt="profile_photo"
+                          />
+                        </div>
                       ) : (
                         <img
                           className="rounded-full"
@@ -261,7 +281,7 @@ const Chats = ({ showChat }) => {
         </div>
       </div>
       {showMainChat && selectedUser ? (
-        <MainChat user={selectedUser}  />
+        <MainChat user={selectedUser} />
       ) : (
         // (showChat) && (
         <>

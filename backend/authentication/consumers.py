@@ -8,7 +8,9 @@ from django.core.paginator import Paginator
 
 
 class ChatConsumer(WebsocketConsumer):
+    online_users = []
     def connect(self):
+        
         try:
             user = self.scope["user"]
             print("my username is:", user)
@@ -16,12 +18,38 @@ class ChatConsumer(WebsocketConsumer):
                 return
             self.username = user.username
             async_to_sync(self.channel_layer.group_add)(self.username, self.channel_name)
+            async_to_sync(self.channel_layer.group_add)('online_group', self.channel_name)
+            # Add the user to the list of online users
+            self.online_users.append(self.username)
             self.accept()
+            # Notify other users that this user is now online
+            self.notify_user_online()
+            
+
         except Exception as e:
             print("An error occurred:", str(e))
 
+    def notify_user_online(self):
+        message = {
+        "type": "online_users_list",
+        "online_users": self.online_users,
+        # "online": online
+        }   
+        print(' i am going to post')
+        self.send_group('online_group','online_status',message)
+
     def disconnect(self, close_code):
+
         try:
+        #     message = {
+        #     "type": "user_online_status",
+        #     "username": self.username,
+        #     "online": False
+        # }
+         # Remove the user from the list of online users
+            self.online_users.remove(self.username)
+            self.notify_user_online()
+            # self.send_group('online_group','online_status',message)
             async_to_sync(self.channel_layer.group_discard)(
             self.username, self.channel_name
         )

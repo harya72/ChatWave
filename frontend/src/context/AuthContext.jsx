@@ -7,6 +7,8 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem("access_token")
   );
+  const [onlineList, setOnlineList] = useState([]);
+
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
@@ -114,7 +116,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, userData }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, userData,onlineList,setOnlineList }}>
       {children}
     </AuthContext.Provider>
   );

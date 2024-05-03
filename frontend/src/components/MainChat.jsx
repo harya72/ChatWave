@@ -19,7 +19,7 @@ const MainChat = React.memo(({ user }) => {
     page,
     setPage,
   } = useWebSocket();
-  const { userData } = useAuth();
+  const { userData, onlineList } = useAuth();
   const [hasMoreData, setHasMore] = useState(true);
   const chatContainerRef = useRef(null);
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,6 @@ const MainChat = React.memo(({ user }) => {
         chatContainerRef.current.scrollHeight;
     }
   }, [sent]);
-
 
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -126,7 +125,7 @@ const MainChat = React.memo(({ user }) => {
   useEffect(() => {
     console.log("on changing the user, I am running and page number is", page);
     if (socket && socket.readyState === WebSocket.OPEN && page === 0) {
-      setHasMore(true)
+      setHasMore(true);
       socket.send(
         JSON.stringify({
           source: "get_messages",
@@ -187,7 +186,7 @@ const MainChat = React.memo(({ user }) => {
       chatContainerRef.current.scrollHeight -
         chatContainerRef.current.clientHeight
     ) {
-      console.log('kuch to hua h')
+      console.log("kuch to hua h");
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
@@ -243,17 +242,38 @@ const MainChat = React.memo(({ user }) => {
       setUpdateConversationList((prevState) => !prevState);
     }
   }, [messageList]);
+
+  const isOnline = onlineList.some((person) => person === user.username);
   return (
     <div className="  flex-1 flex-col h-screen dsff  flex   ">
       <div className="p-2 flex  h-24 shadow-md ">
         <div className="m-2  flex justify-center w-20 h-20 items-center ">
-          <img className="absolute" src="./assets/ellipse_active.png" alt="" />
           {user.thumbnail_url ? (
-            <img
-              src={`http://127.0.0.1:8000${user.thumbnail_url}`}
+            <>
+              {isOnline ? (
+                <div className="border-[3px]  border-green-500 rounded-full p-1">
+                  <img
+                    src={`http://127.0.0.1:8000${user.thumbnail_url}`}
+                    className="rounded-full"
+                    alt="person_profile"
+                  />
+                </div>
+              ) : (
+                <img
+                  src={`http://127.0.0.1:8000${user.thumbnail_url}`}
+                  className="rounded-full"
+                  alt="person_profile"
+                />
+              )}
+            </>
+          ) : isOnline ? (
+            <div className="border-[3px]  border-green-500 rounded-full p-1">
+              <img
+              src={`http://127.0.0.1:8000/media/avatars/blank.png`}
               className="rounded-full"
               alt="person_profile"
             />
+            </div>
           ) : (
             <img
               src={`http://127.0.0.1:8000/media/avatars/blank.png`}
