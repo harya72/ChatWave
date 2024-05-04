@@ -4,6 +4,8 @@ import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
 import { useAuth } from "../context/AuthContext";
+import { FaEye, FaSlack } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const { isAuthenticated, login } = useAuth();
@@ -11,10 +13,11 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const signin = useGoogleLogin({
     onSuccess: async (response) => {
-      console.log("success: ",response);
+      console.log("success: ", response);
 
       const userPayload = {
         grant_type: "convert_token",
@@ -44,8 +47,7 @@ const Login = () => {
         localStorage.removeItem("refresh_token");
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("refresh_token", data.refresh_token);
-        localStorage.setItem('token_type','google-oauth');
-
+        localStorage.setItem("token_type", "google-oauth");
 
         login();
 
@@ -93,7 +95,7 @@ const Login = () => {
       localStorage.clear();
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
-      localStorage.setItem('token_type','jwt');
+      localStorage.setItem("token_type", "jwt");
       axios.defaults.headers.common["Authorization"] = `Bearer ${data.access}`;
 
       login();
@@ -153,21 +155,38 @@ const Login = () => {
                       </label>
                     </div>
                     <div className="relative">
-                      <input
-                        type="password"
-                        id="password"
-                        className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
-                        placeholder=" "
-                        value={password}
-                        required
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <label
-                        htmlFor="password"
-                        className="absolute text-md text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent dark:bg-gray-900 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                      >
-                        Password
-                      </label>
+                      <div className="flex justify-between">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          id="password"
+                          className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                          placeholder=" "
+                          value={password}
+                          required
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <label
+                          htmlFor="password"
+                          className="absolute text-md text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent dark:bg-gray-900 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                        >
+                          Password
+                        </label>
+                      </div>
+                      {showPassword ? (
+                        <>
+                          <FaEyeSlash
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-2 top-3 h-6 w-6 text-gray-500 cursor-pointer"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <FaEye
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-2 top-3 h-6 w-6 text-gray-500 cursor-pointer"
+                          />
+                        </>
+                      )}
                     </div>
 
                     <span className="mt-8">

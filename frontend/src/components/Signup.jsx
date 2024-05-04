@@ -6,9 +6,12 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Navigate } from "react-router-dom";
 import { Bars } from "react-loader-spinner";
+import { FaEye, FaSlack } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
 
 const Signup = () => {
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { isAuthenticated, login } = useAuth();
   const [firstname, setFirstName] = useState("");
   const [lastname, setLastName] = useState("");
@@ -23,8 +26,7 @@ const Signup = () => {
       const userPayload = {
         grant_type: "convert_token",
         client_id: import.meta.env.VITE_DJANGO_CLIENT_ID,
-        client_secret:
-          import.meta.env.VITE_DJANGO_CLIENT_SECRET_KEY,
+        client_secret: import.meta.env.VITE_DJANGO_CLIENT_SECRET_KEY,
         backend: "google-oauth2",
         token: response.access_token,
       };
@@ -179,7 +181,6 @@ const Signup = () => {
                         type="text"
                         id="last_name"
                         className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
-                        
                         placeholder=" "
                         value={lastname}
                         onChange={(e) => setLastName(e.target.value)}
@@ -197,7 +198,6 @@ const Signup = () => {
                         type="text"
                         id="username"
                         className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
-
                         placeholder=" "
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -215,7 +215,6 @@ const Signup = () => {
                         type="email"
                         id="email"
                         className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
-                        
                         placeholder=" "
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -228,22 +227,38 @@ const Signup = () => {
                       </label>
                     </div>
                     <div className="relative">
-                      <input
-                        required
-                        type="password"
-                        id="password"
-                        className="rounded-md p-2.5 border-none focus:border-transparent focus:outline-none focus:ring-0 block    w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
-                        
-                        placeholder=" "
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <label
-                        htmlFor="password"
-                        className="absolute text-md text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent dark:bg-gray-900 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                      >
-                        Password
-                      </label>
+                      <div className="flex justify-between">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          id="password"
+                          className="rounded-md p-2 border-none focus:border-transparent focus:outline-none focus:ring-0 block px-2.5 pb-2.5 pt-4 w-full text-md text-gray-900  r border-1 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500  focus:border-blue-600 peer"
+                          placeholder=" "
+                          value={password}
+                          required
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <label
+                          htmlFor="password"
+                          className="absolute text-md text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent dark:bg-gray-900 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                        >
+                          Password
+                        </label>
+                      </div>
+                      {showPassword ? (
+                        <>
+                          <FaEyeSlash
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-2 top-3 h-6 w-6 text-gray-500 cursor-pointer"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <FaEye
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-2 top-3 h-6 w-6 text-gray-500 cursor-pointer"
+                          />
+                        </>
+                      )}
                     </div>
 
                     <button className="bg-[#FF731D] text-white rounded border border-white border-solid hover:bg-orange-700 p-1 mb-2">
