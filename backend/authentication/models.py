@@ -14,6 +14,7 @@ def upload_thumbnail(instance, filename):
 
 class User(AbstractUser):
     thumbnail = models.ImageField(upload_to=upload_thumbnail, null=True, blank=True)
+    about = models.CharField(null=True,blank=True,max_length=50)
 
 class Messages(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')

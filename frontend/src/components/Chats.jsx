@@ -13,12 +13,32 @@ const Chats = () => {
   const [showAccount, setShowAccount] = useState(false);
   const [edit, setEdit] = useState(false);
   const editRef = useRef(null);
+  const [about,setAbout] = useState('');
 
   useEffect(() => {
     if (edit && editRef.current) {
       editRef.current.focus();
     }
   }, [edit]);
+
+  useEffect(()=>{
+    if(showAccount && socket){
+      socket.send(JSON.stringify({
+        'source':'fetch_profile',
+        'username':userData.user
+      }))
+      const fetched_profile = (event) =>{
+        const data = JSON.parse(event.data);
+        if(data.source==='fetch_profile'){
+          setAbout(data.data.about)
+
+        }
+      }
+      if(socket){
+        socket.addEventListener('message',fetched_profile)
+      }
+    }
+  },[showAccount])
 
   const handleFileUpload = (e) => {
     const selectedFile = e.target.files[0];
@@ -108,7 +128,12 @@ const Chats = () => {
       return null;
     }
   };
-
+const submitAbout = ()=>{
+  socket.send(JSON.stringify({
+    source: "update_about",
+    about: about
+  }))
+}
   useEffect(() => {
     const socket = handleConversationList();
 
@@ -384,10 +409,12 @@ const Chats = () => {
                   type="text"
                   className="text-black border-none focus:outline-none w-full active:outline-none rounded bg-transparent"
                   ref={editRef}
+                  value={about}
+                  onChange={(e) => setAbout(e.target.value)}
                 />
               ) : (
                 <div className="w-full">
-                  <p>Himanshu</p>
+                  <p className="drop-shadow-2xl">{about? about : 'You have not set your about' }</p>
                 </div>
               )}
 
@@ -397,6 +424,7 @@ const Chats = () => {
                     className="  w-8 h-8 mx-2 text-gray-400 cursor-pointer"
                     onClick={() => {
                       setEdit(!edit);
+                      submitAbout();
                     }}
                   />
                 ) : (

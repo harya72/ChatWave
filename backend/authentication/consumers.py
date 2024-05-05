@@ -90,6 +90,25 @@ class ChatConsumer(WebsocketConsumer):
             self.mark_as_read(data)
         elif data_source == "file":
             self.upload_photo(data)
+
+        elif data_source =='fetch_profile':
+            self.fetch_profile(data)
+        
+        elif data_source =='update_about':
+            self.update_about(data)
+
+    def update_about(self,data):
+        username = self.scope['user']
+        about = data.get('about')
+        User.objects.filter(username=username).update(about=about)
+        
+    def fetch_profile(self,data):
+        username = data.get('username')
+        user_obj = User.objects.get(username=username)
+        response = {
+            "about":user_obj.about
+        }
+        self.send_group(username,'fetch_profile',response)
     
     def upload_photo(self,data):
         base64_data = data.get("data")
