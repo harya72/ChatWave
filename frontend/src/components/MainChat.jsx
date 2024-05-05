@@ -254,14 +254,14 @@ const MainChat = React.memo(({ user }) => {
                 <div className="border-[3px]  border-green-500 rounded-full p-1">
                   <img
                     src={`http://127.0.0.1:8000${user.thumbnail_url}`}
-                    className="rounded-full"
+                    className="w-16 h-16 rounded-full"
                     alt="person_profile"
                   />
                 </div>
               ) : (
                 <img
                   src={`http://127.0.0.1:8000${user.thumbnail_url}`}
-                  className="rounded-full"
+                  className="w-16 h-16 rounded-full"
                   alt="person_profile"
                 />
               )}
@@ -270,14 +270,14 @@ const MainChat = React.memo(({ user }) => {
             <div className="border-[3px]  border-green-500 rounded-full p-1">
               <img
               src={`http://127.0.0.1:8000/media/avatars/blank.png`}
-              className="rounded-full"
+              className="w-16 h-16 rounded-full"
               alt="person_profile"
             />
             </div>
           ) : (
             <img
               src={`http://127.0.0.1:8000/media/avatars/blank.png`}
-              className="rounded-full"
+              className="w-16 h-16 rounded-full"
               alt="person_profile"
             />
           )}

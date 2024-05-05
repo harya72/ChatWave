@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log(response)
+          // console.log(response)
           setUserData({
             username: response.data.username,
             profilePhoto: response.data.avatar_url,
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, userData,onlineList,setOnlineList }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, userData,setUserData,onlineList,setOnlineList }}>
       {children}
     </AuthContext.Provider>
   );

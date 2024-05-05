@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404
 from .models import User, Messages
 from django.db.models import Q
 from django.core.paginator import Paginator
+import base64
+from django.core.files.base import ContentFile
 
 
 class ChatConsumer(WebsocketConsumer):
@@ -86,7 +88,22 @@ class ChatConsumer(WebsocketConsumer):
             self.conversation_list(data)
         elif data_source == 'message_seen':
             self.mark_as_read(data)
-
+        elif data_source == "file":
+            self.upload_photo(data)
+    
+    def upload_photo(self,data):
+        base64_data = data.get("data")
+        fileName = data.get("fileName")
+        print('filenameis',fileName)
+        user = self.scope['user']
+        image = ContentFile(base64.b64decode(base64_data))
+        user.thumbnail.save(fileName,image,save = True)
+        response = {
+            "username": user.username,
+            "thumbnail":user.thumbnail.url
+        }
+        self.send_group('online_group','profile_updated',response)
+    
     def mark_as_read(self,data):
         sender= data.get('sender')
         message_sent_by=User.objects.get(username=sender)

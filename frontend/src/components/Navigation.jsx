@@ -26,9 +26,9 @@ const Navigation = () => {
             </p>
             <div className="flex flex-col items-center justify-evenly h-3/4 w-full">
               <div className="flex flex-col justify-center items-center">
-                <img src="./assets/menu.png" alt="" className="text-white" />
+                <img src="./assets/status.svg" alt="" className="text-white w-8 h-8" />
                 <p className="font-semibold text-sm text-white text-center">
-                  Menu
+                  Status
                 </p>
               </div>
               <div className=" flex justify-center items-center flex-col">

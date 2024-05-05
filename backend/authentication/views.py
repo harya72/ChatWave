@@ -18,7 +18,7 @@ class HomeView(APIView):
                 return Response(
                     {
                         "avatar_url": f"http://localhost:8000{user.thumbnail.url}",
-                        "username": user.first_name,
+                        "username": user.username,
                         "message":"You have the image buddy",
                         'user':user.username
                     }
@@ -26,7 +26,7 @@ class HomeView(APIView):
             else:
                 return Response(
                     {
-                        "username": user.first_name,
+                        "username": user.username,
                         "email": user.email,
                         "message": "You dont have image buddy",
                         "avatar_url": "http://localhost:8000/media/avatars/blank.png",

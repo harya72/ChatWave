@@ -7,7 +7,7 @@ export const useWebSocket = () => useContext(WebSocketContext);
 
 export const WebSocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  const { isAuthenticated, onLineList, setOnlineList } = useAuth();
+  const { isAuthenticated,setOnlineList } = useAuth();
   const [messageList, setMessageList] = useState([]);
   const [typingIndicator, setTypingIndicator] = useState(false);
   const [whoIsTyping, setWhoIsTyping] = useState("");
@@ -40,7 +40,6 @@ export const WebSocketProvider = ({ children }) => {
           setOnlineList(online_users);
         }
       };
-
       socket.onerror = (error) => {
         console.error("Socket error:", error);
       };
