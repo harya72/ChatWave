@@ -108,7 +108,7 @@ class ChatConsumer(WebsocketConsumer):
         response = {
             "about":user_obj.about
         }
-        self.send_group(username,'fetch_profile',response)
+        self.send_group(self.scope['user'].username,'fetch_profile',response)
     
     def upload_photo(self,data):
         base64_data = data.get("data")

@@ -50,3 +50,46 @@
     animation-delay: 400ms;
   }
 
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 200ms;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
+/* .alert-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.alert-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 100ms, transform 100ms;
+}
+
+.alert-exit {
+  opacity: 1;
+}
+
+.alert-exit-active {
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 100ms, transform 100ms;
+} */
+.temp{
+background-color: red;
+}
+
+

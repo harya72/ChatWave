@@ -6,14 +6,16 @@ import { BiUserX } from "react-icons/bi";
 import { MdClose } from "react-icons/md";
 import { MdModeEdit } from "react-icons/md";
 import { TiTick } from "react-icons/ti";
+import Status from "./Status";
 const Chats = () => {
-  const { userData, onlineList, setUserData } = useAuth();
+  const { userData, onlineList, setUserData,status, setStatus } = useAuth();
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
   const [showAccount, setShowAccount] = useState(false);
   const [edit, setEdit] = useState(false);
   const editRef = useRef(null);
   const [about,setAbout] = useState('');
+  const [prevUser, setPrevUser] = useState(null);
 
   useEffect(() => {
     if (edit && editRef.current) {
@@ -21,24 +23,25 @@ const Chats = () => {
     }
   }, [edit]);
 
-  useEffect(()=>{
-    if(showAccount && socket){
-      socket.send(JSON.stringify({
-        'source':'fetch_profile',
-        'username':userData.user
-      }))
-      const fetched_profile = (event) =>{
+  useEffect(() => {
+    if (showAccount && socket) {
+      socket.send(
+        JSON.stringify({
+          source: "fetch_profile",
+          username: userData.user,
+        })
+      );
+      const fetched_profile = (event) => {
         const data = JSON.parse(event.data);
-        if(data.source==='fetch_profile'){
-          setAbout(data.data.about)
-
+        if (data.source === "fetch_profile") {
+          setAbout(data.data.about);
         }
-      }
-      if(socket){
-        socket.addEventListener('message',fetched_profile)
+      };
+      if (socket) {
+        socket.addEventListener("message", fetched_profile);
       }
     }
-  },[showAccount])
+  }, [showAccount]);
 
   const handleFileUpload = (e) => {
     const selectedFile = e.target.files[0];
@@ -56,20 +59,20 @@ const Chats = () => {
     };
 
     reader.readAsDataURL(selectedFile);
-    const handleProfilePhoto = (event)=>{
+    const handleProfilePhoto = (event) => {
       const data = JSON.parse(event.data);
-      if(data.source==='profile_updated'){
-        if(data.data.username===userData.username){
-        setUserData((prevData) => ({
-          ...prevData,
-          profilePhoto: `http://127.0.0.1:8000${data.data.thumbnail}`,
-        }));
+      if (data.source === "profile_updated") {
+        if (data.data.username === userData.username) {
+          setUserData((prevData) => ({
+            ...prevData,
+            profilePhoto: `http://127.0.0.1:8000${data.data.thumbnail}`,
+          }));
         }
       }
-    }
+    };
 
-    if(socket){
-      socket.addEventListener('message',handleProfilePhoto)
+    if (socket) {
+      socket.addEventListener("message", handleProfilePhoto);
     }
   };
 
@@ -122,18 +125,20 @@ const Chats = () => {
       socket.send(
         JSON.stringify({ source: "conversation_list", username: userData.user })
       );
-      return socket; 
+      return socket;
     } else {
       console.error("WebSocket connection not open.");
       return null;
     }
   };
-const submitAbout = ()=>{
-  socket.send(JSON.stringify({
-    source: "update_about",
-    about: about
-  }))
-}
+  const submitAbout = () => {
+    socket.send(
+      JSON.stringify({
+        source: "update_about",
+        about: about,
+      })
+    );
+  };
   useEffect(() => {
     const socket = handleConversationList();
 
@@ -216,7 +221,13 @@ const submitAbout = ()=>{
                       className="flex mt-5 cursor-pointer shadow-md rounded-md"
                       onClick={() => {
                         setShowMainChat(true);
-                        setSelectedUser(user);
+                        setPage(0);
+                        if (user !== prevUser) {
+                          setSelectedUser(user);
+                          setMessageList([]);
+                          setPrevUser(user);
+                        }
+                        setShowAccount(false);
                       }}
                     >
                       {user.thumbnail_url ? (
@@ -227,7 +238,6 @@ const submitAbout = ()=>{
                         />
                       ) : (
                         <img
-                         
                           src={`http://127.0.0.1:8000/media/avatars/blank.png`}
                           alt="profile_photo"
                           className="w-16 h-16 rounded-full"
@@ -235,7 +245,7 @@ const submitAbout = ()=>{
                       )}
 
                       <span className="p-2 font-inter font-semibold">
-                        {user.first_name} {user.last_name}
+                        {user.username}
                       </span>
                     </div>
                   </li>
@@ -274,6 +284,7 @@ const submitAbout = ()=>{
                       setSelectedUser(person);
                       setMessageList([]);
                       setShowAccount(false);
+                      setStatus(false);
                     }}
                   >
                     <div className=" mr-5 flex justify-center items-center">
@@ -305,7 +316,7 @@ const submitAbout = ()=>{
                         </div>
                       ) : (
                         <img
-                        className="w-16 h-16 rounded-full"
+                          className="w-16 h-16 rounded-full"
                           src={`http://127.0.0.1:8000/media/avatars/blank.png`}
                           alt="profile_photo"
                         />
@@ -316,7 +327,8 @@ const submitAbout = ()=>{
                         <span>{person.username}</span>
                         <div className="font-semibold text-gray-800 text-sm">
                           {typingIndicator &&
-                          whoIsTyping === person.username ? (
+                          whoIsTyping === person.username &&
+                          person.username != userData.user ? (
                             "is typing..."
                           ) : (
                             <></>
@@ -414,7 +426,9 @@ const submitAbout = ()=>{
                 />
               ) : (
                 <div className="w-full">
-                  <p className="drop-shadow-2xl">{about? about : 'You have not set your about' }</p>
+                  <p className="drop-shadow-2xl">
+                    {about ? about : "You have not set your about"}
+                  </p>
                 </div>
               )}
 
@@ -441,6 +455,7 @@ const submitAbout = ()=>{
         </div>
       ) : (
         <>
+        {status ? <Status/>:null}
           {showMainChat && selectedUser ? (
             <MainChat user={selectedUser} />
           ) : (
