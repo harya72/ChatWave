@@ -98,11 +98,19 @@ class ChatConsumer(WebsocketConsumer):
             self.fetch_profile(data)
         
         elif data_source == 'fetch_all_status':
-            print('hi himanshu')
             self.fetch_all_status(data)
         
+        elif data_source == 'delete_status':
+            self.delete_status(data)
+
         elif data_source =='update_about':
             self.update_about(data)
+
+    def delete_status(self,data):
+        status = Status.objects.filter(user=self.scope['user'])
+        status.delete()
+        self.fetch_all_status(data)
+
 
     def fetch_all_status(self, data):
         # status = Status.objects.all()

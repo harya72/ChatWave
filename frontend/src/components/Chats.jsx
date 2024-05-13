@@ -8,10 +8,9 @@ import { MdModeEdit } from "react-icons/md";
 import { TiTick } from "react-icons/ti";
 import Status from "./Status";
 const Chats = () => {
-  const { userData, onlineList, setUserData,status, setStatus } = useAuth();
+  const { userData, onlineList, setUserData,status, setStatus,showAccount,setShowAccount } = useAuth();
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
-  const [showAccount, setShowAccount] = useState(false);
   const [edit, setEdit] = useState(false);
   const editRef = useRef(null);
   const [about,setAbout] = useState('');
@@ -165,8 +164,7 @@ const Chats = () => {
         <div className="w-full  h-24 flex  items-center">
           <div className="m-5 flex">
             <div
-              className="m-2 mr-5 flex justify-center items-center cursor-pointer"
-              onClick={() => setShowAccount(!showAccount)}
+              className="m-2 mr-5 flex justify-center items-center"
             >
               <img className="absolute" src="./assets/ellipse.png" alt="" />
               <img
@@ -179,11 +177,15 @@ const Chats = () => {
               <span className="font-bold text-xl truncate font-inter">
                 {userData ? userData.username : "username"}
               </span>
+              <span className="font-light text-sm truncate font-inter text-gray-400 hover:text-gray-700 cursor-pointer" 
+              onClick={() => setShowAccount(!showAccount)}
+              
+              >View your profile</span>
             </div>
           </div>
         </div>
         <div className="p-3 h-full  flex flex-col overflow-hidden">
-          <div className="flex m-2 justify-between items-center">
+          {/* <div className="flex m-2 justify-between items-center">
             <div>
               <h2 className="font-inter">Messages</h2>
             </div>
@@ -195,7 +197,7 @@ const Chats = () => {
                 <img src="./assets/heart.png" alt="edit" />
               </div>
             </div>
-          </div>
+          </div> */}
           <div className="relative">
             <span
               className="absolute m-1 p-1 right-0 cursor-pointer"
@@ -227,6 +229,7 @@ const Chats = () => {
                           setMessageList([]);
                           setPrevUser(user);
                         }
+                        setQuery("")
                         setShowAccount(false);
                       }}
                     >

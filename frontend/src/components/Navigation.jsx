@@ -7,12 +7,13 @@ import { CSSTransition } from "react-transition-group";
 import Status from "./Status";
 
 const Navigation = () => {
-  const { logout, status, setStatus } = useAuth();
+  const { logout, status, setStatus,setShowAccount,showAccount } = useAuth();
   const [openModal, setOpenModal] = useState(false);
   const [showDashboard, setShowDashboard] = useState(true);
   const nodeRef = useRef(null);
   const handleStatus = () => {
     setStatus(!status);
+    setShowAccount(false);
   };
 
   return (
@@ -32,8 +33,9 @@ const Navigation = () => {
               Dashboard
             </p>
             <div className="flex flex-col items-center justify-evenly h-3/4 w-full">
+            <div className=" flex justify-center items-center flex-col">
               <div
-                className="flex flex-col justify-center items-center cursor-pointer"
+                className={`rounded-full w-10 h-10 flex flex-col justify-center items-center cursor-pointer ${status? "bg-[#FF731D]":""}`}
                 onClick={handleStatus}
               >
                 <img
@@ -41,6 +43,7 @@ const Navigation = () => {
                   alt=""
                   className="text-white w-8 h-8"
                 />
+              </div>
                 <p className="font-semibold text-sm text-white text-center">
                   Status
                 </p>
@@ -61,12 +64,12 @@ const Navigation = () => {
                   Messages
                 </p>
               </div>
-              <div className="flex flex-col justify-center items-center">
+              {/* <div className="flex flex-col justify-center items-center">
                 <img src="./assets/people.png" alt="" />
                 <p className="font-semibold text-sm text-white text-center">
                   People
                 </p>
-              </div>
+              </div> */}
               {/* <div>
                 <img src="./assets/phone.png" alt="" />
               </div> */}

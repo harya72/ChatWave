@@ -14,6 +14,19 @@ const Status = () => {
   const { socket } = useWebSocket();
   const addedStories = new Set();
   const addedOtherStories = new Set();
+  const [show, setShow] = useState(true);
+
+  const handleDelete = () => {
+    socket.send(
+      JSON.stringify({
+        source: "delete_status",
+      })
+    );
+    if (storiesRef.current) {
+      storiesRef.current.innerHTML = '';
+    }
+    setShow(true);
+  };
 
   const addStatus = (e) => {
     const selectedFile = e.target.files[0];
@@ -49,8 +62,8 @@ const Status = () => {
             skin: "snapgram", // container class
             avatars: true, // shows user photo instead of last story item preview
             // list: true,           // displays a timeline instead of carousel
-            // openEffect: true,      // enables effect when opening story
-            // cubeEffect: true, // enables the 3d cube effect when sliding story
+            openEffect: true, // enables effect when opening story
+            cubeEffect: true, // enables the 3d cube effect when sliding story
             // autoFullScreen: true, // enables fullscreen on mobile browsers
             // backButton: true, // adds a back button to close the story viewer
             // backNative: false,     // uses window history to enable back button on browsers/android
@@ -80,7 +93,6 @@ const Status = () => {
                 },
               ],
             };
-
             // Check if the story has already been added
             if (
               !addedStories.has(status.id) &&
@@ -89,6 +101,7 @@ const Status = () => {
               // Add the story to the corresponding Zuck instance and mark it as added
               if (status.user === userData.user) {
                 stories.add(storyData);
+                setShow(false);
                 addedStories.add(status.id);
               } else {
                 otherStories.add(storyData);
@@ -124,20 +137,40 @@ const Status = () => {
           </div>
           <div className="flex flex-row m-5 ">
             <div ref={storiesRef} className=""></div>
-            <div className="m-4 text-gray-700">
-              <div className="flex flex-row items-center">
-                <p className="font-semibold mr-2">My Status</p>
-                <label htmlFor="addstatus" className="cursor-pointer relative">
-                  <IoIosAddCircle className="size-8 text-gray-400 cursor-pointer" />
-                  <input
-                    type="file"
-                    id="addstatus"
-                    className="hidden"
-                    onChange={addStatus}
-                  />
-                </label>
+
+            <div className="m-4 text-gray-700 flex flex-row gap-5">
+              {show && (
+                <img
+                  src={userData.profilePhoto}
+                  alt=""
+                  className="rounded-full w-16 h-16"
+                />
+              )}
+              <div>
+                <div className="flex flex-row items-center">
+                  <p className="font-semibold mr-2">My Status</p>
+                  <label
+                    htmlFor="addstatus"
+                    className="cursor-pointer relative"
+                  >
+                    <IoIosAddCircle className="size-8 text-gray-400 cursor-pointer" />
+                    <input
+                      type="file"
+                      id="addstatus"
+                      className="hidden"
+                      onChange={addStatus}
+                    />
+                  </label>
+                </div>
+                <p className="text-sm">Tap to View status</p>
               </div>
-              <p className="text-sm">Tap to View status</p>
+              <div>
+                {!show && (
+                  <div className="bg-gray-400 p-2 font-semibold text-white rounded-md cursor-pointer" onClick={handleDelete}>
+                    <span>Delete</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <p className="p-6 pb-0 font-semibold">Recent Updates</p>

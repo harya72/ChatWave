@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [onlineList, setOnlineList] = useState([]);
   const [status, setStatus] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [showAccount, setShowAccount] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,7 +117,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, userData,setUserData,onlineList,setOnlineList,status,setStatus }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, userData,setUserData,onlineList,setOnlineList,status,setStatus,showAccount,setShowAccount }}>
       {children}
     </AuthContext.Provider>
   );

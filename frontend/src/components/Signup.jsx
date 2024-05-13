@@ -51,6 +51,7 @@ const Signup = () => {
         localStorage.removeItem("refresh_token");
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("refresh_token", data.refresh_token);
+        localStorage.setItem("token_type", "google-oauth");
 
         login();
 
@@ -106,6 +107,8 @@ const Signup = () => {
           localStorage.clear();
           localStorage.setItem("access_token", data.access);
           localStorage.setItem("refresh_token", data.refresh);
+          localStorage.setItem("token_type", "jwt");
+
           axios.defaults.headers.common[
             "Authorization"
           ] = `Bearer ${data.access}`;
