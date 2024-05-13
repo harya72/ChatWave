@@ -2,11 +2,12 @@ from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 import json
 from django.shortcuts import get_object_or_404
-from .models import User, Messages
+from .models import User, Messages, Status
 from django.db.models import Q
 from django.core.paginator import Paginator
 import base64
 from django.core.files.base import ContentFile
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 class ChatConsumer(WebsocketConsumer):
@@ -90,12 +91,36 @@ class ChatConsumer(WebsocketConsumer):
             self.mark_as_read(data)
         elif data_source == "file":
             self.upload_photo(data)
+        elif data_source == "add_status":
+            self.add_status(data)
 
         elif data_source =='fetch_profile':
             self.fetch_profile(data)
         
+        elif data_source == 'fetch_all_status':
+            print('hi himanshu')
+            self.fetch_all_status(data)
+        
         elif data_source =='update_about':
             self.update_about(data)
+
+    def fetch_all_status(self, data):
+        # status = Status.objects.all()
+        status = Status.objects.all().order_by('-created_at')
+        # Convert datetime objects to string representations
+        status_data = [
+        {
+            "id": s.id,
+            "user": s.user.username,
+            "status_file": str(s.status_file),
+            "created_at": s.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        for s in status
+        ]
+        response = {
+        "status": status_data,
+        }
+        self.send_group('online_group', 'fetch_all_status', response)
 
     def update_about(self,data):
         username = self.scope['user']
@@ -122,7 +147,17 @@ class ChatConsumer(WebsocketConsumer):
             "thumbnail":user.thumbnail.url
         }
         self.send_group('online_group','profile_updated',response)
-    
+
+    def add_status(self,data):
+        base64_data=data.get('data')
+        fileName = data.get("fileName")
+        user = self.scope["user"]
+        image_data = base64.b64decode(base64_data)
+        image = ContentFile(image_data, name=fileName)
+        added_status =Status.objects.create(user=user,status_file=image)
+        added_status.save()
+        self.fetch_all_status(data)
+
     def mark_as_read(self,data):
         sender= data.get('sender')
         message_sent_by=User.objects.get(username=sender)

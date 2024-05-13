@@ -93,7 +93,7 @@ const MainChat = React.memo(({ user }) => {
 
           <div className="max-w-[50%] min-w-40 flex flex-wrap min-h-10 items-center justify-between px-2 text-white font-inter m-2 text-sm bg-[#FF731D] rounded-md">
             {message}
-            <span className="font-inter text-xs self-center mx-2 text-[#A19791]">
+            <span className="font-inter text-xs self-center mx-2 text-[#FFFF]">
               {formattedTime}
             </span>
           </div>

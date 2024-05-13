@@ -1,42 +1,153 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Zuck } from "zuck.js";
 import "zuck.js/css";
 import "zuck.js/skins/snapgram";
+import { MdClose } from "react-icons/md";
+import { useAuth } from "../context/AuthContext";
+import { useWebSocket } from "../context/WebSocketContext";
+import { IoIosAddCircle } from "react-icons/io";
 
 const Status = () => {
   const storiesRef = useRef(null);
+  const othersStoryRef = useRef(null);
+  const { status, setStatus, userData } = useAuth();
+  const { socket } = useWebSocket();
+  const addedStories = new Set();
+  const addedOtherStories = new Set();
+
+  const addStatus = (e) => {
+    const selectedFile = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const base64Data = reader.result.split(",")[1];
+      socket.send(
+        JSON.stringify({
+          source: "add_status",
+          data: base64Data,
+          fileName: selectedFile.name,
+        })
+      );
+    };
+
+    reader.readAsDataURL(selectedFile);
+  };
 
   useEffect(() => {
-    if (storiesRef.current) {
-      const options = {}; // See ./src/options.ts
-      const stories = new Zuck(storiesRef.current, options);
-
-      const dummyStory = {
-        id: "user1",
-        photo: "./assets/group1.png",
-        name: "User 1",
-        link: "",
-        lastUpdated: Date.now(), // Using current timestamp
-        items: [
-          {
-            id: "story1",
-            type: "photo",
-            length: 5, // in seconds
-            src: "./assets/person.png",
-          },
-          // Add more items as needed
-        ],
-      };
-
-      // Add the dummy story to the stories component
-      stories.add(dummyStory);
+    if (socket) {
+      socket.send(
+        JSON.stringify({
+          source: "fetch_all_status",
+        })
+      );
     }
-  }, []);
+    const handleStatusList = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.source === "fetch_all_status") {
+        if (storiesRef.current) {
+          const options = {
+            skin: "snapgram", // container class
+            avatars: true, // shows user photo instead of last story item preview
+            // list: true,           // displays a timeline instead of carousel
+            // openEffect: true,      // enables effect when opening story
+            // cubeEffect: true, // enables the 3d cube effect when sliding story
+            // autoFullScreen: true, // enables fullscreen on mobile browsers
+            // backButton: true, // adds a back button to close the story viewer
+            // backNative: false,     // uses window history to enable back button on browsers/android
+            // previousTap: true, // use 1/3 of the screen to navigate to previous item when tap the story
+            // localStorage: true,    // set true to save "seen" position. Element must have a id to save properly.
+            // reactive: true,        // set true if you use frameworks like React to control the timeline (see react.sample.html)
+            // rtl: false,
+          };
+          const stories = new Zuck(storiesRef.current, options);
+          const otherStories = new Zuck(othersStoryRef.current, options);
+          // Add received stories
+          // Add received stories
+          data.data.status.forEach((status) => {
+            const createdDate = new Date(status.created_at);
+            const unixTime = createdDate.getTime();
+            const storyData = {
+              id: status.user,
+              photo: `http://127.0.0.1:8000/media/${status.status_file}`,
+              name: status.user,
+              items: [
+                {
+                  id: status.id,
+                  type: "photo",
+                  length: 5,
+                  src: `http://127.0.0.1:8000/media/${status.status_file}`,
+                  time: unixTime / 1000,
+                },
+              ],
+            };
 
-  return <div  className="min-w-[20%] bg-[rgb(247,245,244)] shadow-2xl p-5">
-    <p className="font-semibold text-gray-500 mb-5">Recent Status</p>
-<div ref={storiesRef}></div>
-  </div>;
+            // Check if the story has already been added
+            if (
+              !addedStories.has(status.id) &&
+              !addedOtherStories.has(status.id)
+            ) {
+              // Add the story to the corresponding Zuck instance and mark it as added
+              if (status.user === userData.user) {
+                stories.add(storyData);
+                addedStories.add(status.id);
+              } else {
+                otherStories.add(storyData);
+                addedOtherStories.add(status.id);
+              }
+            }
+          });
+        }
+      }
+    };
+
+    if (socket) {
+      socket.addEventListener("message", handleStatusList);
+    }
+
+    return () => {
+      if (socket) {
+        socket.removeEventListener("message", handleStatusList);
+      }
+    };
+  }, [socket]);
+
+  return (
+    <>
+      {status ? (
+        <div className="w-[60%] ">
+          <div className="flex p-6 flex-row bg-gray-400 drop-shadow-2xl justify-between">
+            <p className="text-lg font-semibold text-white">Status</p>
+            <MdClose
+              className="text-white w-8 h-8 cursor-pointer"
+              onClick={() => setStatus(false)}
+            />
+          </div>
+          <div className="flex flex-row m-5 ">
+            <div ref={storiesRef} className=""></div>
+            <div className="m-4 text-gray-700">
+              <div className="flex flex-row items-center">
+                <p className="font-semibold mr-2">My Status</p>
+                <label htmlFor="addstatus" className="cursor-pointer relative">
+                  <IoIosAddCircle className="size-8 text-gray-400 cursor-pointer" />
+                  <input
+                    type="file"
+                    id="addstatus"
+                    className="hidden"
+                    onChange={addStatus}
+                  />
+                </label>
+              </div>
+              <p className="text-sm">Tap to View status</p>
+            </div>
+          </div>
+          <p className="p-6 pb-0 font-semibold">Recent Updates</p>
+          <div className="p-6" ref={othersStoryRef}></div>
+        </div>
+      ) : (
+        <></>
+      )}
+    </>
+  );
 };
 
 export default Status;
