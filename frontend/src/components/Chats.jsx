@@ -58,20 +58,24 @@ const Chats = () => {
     };
 
     reader.readAsDataURL(selectedFile);
-    const handleProfilePhoto = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.source === "profile_updated") {
-        if (data.data.username === userData.username) {
-          setUserData((prevData) => ({
-            ...prevData,
-            profilePhoto: `http://127.0.0.1:8000${data.data.thumbnail}`,
-          }));
-        }
-      }
-    };
+  };
 
+  useEffect(()=>{
     if (socket) {
       socket.addEventListener("message", handleProfilePhoto);
+    }
+  },[])
+
+  const handleProfilePhoto = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.source === "profile_updated") {
+      if (data.data.username === userData.username) {
+        setUserData((prevData) => ({
+          ...prevData,
+          profilePhoto: `http://127.0.0.1:8000${data.data.thumbnail}`,
+        }));
+      }
+      handleConversationList();
     }
   };
 
@@ -169,7 +173,7 @@ const Chats = () => {
               <img className="absolute" src="./assets/ellipse.png" alt="" />
               <img
                 src={userData ? userData.profilePhoto : null}
-                className="rounded-full w-16 h-16"
+                className="rounded-full max-w-16 max-h-16"
                 alt="photo"
               />
             </div>

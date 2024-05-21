@@ -5,6 +5,10 @@ import "../index.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import { MdClose } from "react-icons/md";
 import { CSSTransition } from "react-transition-group";
+import axios from "axios";
+import { SiGoogletranslate } from "react-icons/si";
+import { HiDotsVertical } from "react-icons/hi";
+import { Button } from "flowbite-react";
 
 const MainChat = React.memo(({ user }) => {
   const [message, setMessage] = useState("");
@@ -12,6 +16,9 @@ const MainChat = React.memo(({ user }) => {
   const [sent, setSent] = useState(false);
   const [profile, setProfile] = useState(false);
   const [about, setAbout] = useState("");
+  const [languageToTranslate, setLanguageToTranslate] = useState("en");
+  const [preference, setPreference] = useState(false);
+  const [languages, setLanguages] = useState([]);
   const nodeRef = useRef(null);
   const {
     socket,
@@ -28,7 +35,50 @@ const MainChat = React.memo(({ user }) => {
   const [hasMoreData, setHasMore] = useState(true);
   const chatContainerRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [languagePanel, setLanguagePanel] = useState(false);
   const receivingRef = useRef(null);
+  const [loadingTranslation, setloadingTranslation] = useState({});
+
+  const loadLanguages = async () => {
+    try {
+      let response = await axios.get("http://127.0.0.1:5000/languages");
+      const languageData = response.data;
+      const extractedLanguages = languageData.map((lang) => ({
+        code: lang.code,
+        name: lang.name,
+      }));
+
+      setLanguages(extractedLanguages);
+    } catch (error) {
+      console.log("Error fetching Language List: ", error);
+    }
+  };
+
+  const translateText = async (message, index) => {
+    setloadingTranslation((prevLoading) => ({ ...prevLoading, [index]: true }));
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/translate", {
+        q: message,
+        source: "auto",
+        target: languageToTranslate,
+        format: "text",
+      });
+
+      const newMessages = [...messageList];
+      newMessages[index] = {
+        ...newMessages[index],
+        translatedText: response.data.translatedText,
+      };
+      setMessageList(newMessages);
+    } catch (error) {
+      console.error("Error translating text:", error);
+    } finally {
+      setloadingTranslation((prevLoading) => ({
+        ...prevLoading,
+        [index]: false,
+      })); // Reset loading state for the specific message
+    }
+  };
 
   const handleInfiniteScroll = () => {
     setFirstLoad(false);
@@ -102,7 +152,13 @@ const MainChat = React.memo(({ user }) => {
     );
   };
 
-  const ReceivingMsg = ({ message, time }) => {
+  const ReceivingMsg = ({
+    message,
+    time,
+    index,
+    translatedText,
+    loadingTranslation,
+  }) => {
     const formatedTimeString = new Date(time);
     const formattedTime = formatedTimeString.toLocaleString("en-US", {
       hour: "2-digit",
@@ -111,10 +167,13 @@ const MainChat = React.memo(({ user }) => {
     });
     return (
       <div ref={receivingRef}>
-        <div>
+        <div className="flex flex-row items-center">
           <div className=" max-w-[40%] inline-block min-h-10 px-2 font-inter m-2 text-sm bg-[#F7F5F4] rounded-md">
             <div className="flex justify-between">
-              <div className="flex-wrap items-center py-2 mr-2">{message}</div>
+              <div className="flex-wrap items-center py-2 mr-2">
+                {" "}
+                {translatedText ? translatedText : message}
+              </div>
               <div className="flex justify-between items-end">
                 <span className="font-inter text-xs text-[#A19791] self-center">
                   {formattedTime}
@@ -122,6 +181,14 @@ const MainChat = React.memo(({ user }) => {
               </div>
             </div>
           </div>
+          {loadingTranslation ? (
+            <ClipLoader color="#FF731D" />
+          ) : (
+            <SiGoogletranslate
+              onClick={() => translateText(message, index)}
+              className="cursor-pointer w-8 h-8 text-gray-500"
+            />
+          )}
         </div>
       </div>
     );
@@ -191,7 +258,6 @@ const MainChat = React.memo(({ user }) => {
       chatContainerRef.current.scrollHeight -
         chatContainerRef.current.clientHeight
     ) {
-      console.log("kuch to hua h");
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
@@ -248,11 +314,77 @@ const MainChat = React.memo(({ user }) => {
     }
   }, [messageList]);
 
+  const LanguagePreference = () => {
+    return (
+      <div className="p-2 bg-white rounded-sm cursor-pointer">
+        <p
+          onClick={() => {
+            loadLanguages();
+            setLanguagePanel(true);
+          }}
+        >
+          Language Preference
+        </p>
+      </div>
+    );
+  };
+
+  const SelectLanguagePreference = () => {
+    return (
+      <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="flex flex-col items-center justify-center w-1/2 bg-white rounded-lg p-8">
+          <form class="max-w-sm mx-auto">
+            <label
+              for="countries"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-center"
+            >
+              Select your preferred language for translations
+            </label>
+            <select
+              id="countries"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              value={languageToTranslate}
+              onChange={(event) => setLanguageToTranslate(event.target.value)}
+            >
+              <option selected>Choose a language</option>
+              {languages.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.name}
+                </option>
+              ))}
+            </select>
+          </form>
+          <div className="flex justify-center gap-4 mt-2">
+            <Button
+              color="failure"
+              className="bg-[#FF731D] px-2 font-semibold"
+              onClick={() => {
+                setLanguagePanel(false);
+                setPreference(false);
+              }}
+            >
+              Ok
+            </Button>
+            <Button
+              color="gray"
+              className="text-[#FF731D] font-medium  px-2 "
+              onClick={() => {
+                setLanguagePanel(false);
+                setPreference(false);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
   const isOnline = onlineList.some((person) => person === user.username);
   return (
     <div className="flex-row flex flex-1">
       <div className="  flex-1 flex-col h-screen   flex   ">
-        <div className="p-2 flex  h-24 shadow-md ">
+        <div className="p-2 flex  h-24 shadow-md">
           <div className="m-2  flex justify-center w-20 h-20 items-center ">
             {user.thumbnail_url ? (
               <>
@@ -325,6 +457,13 @@ const MainChat = React.memo(({ user }) => {
               )}
             </div>
           </div>
+          <div className="self-center ml-auto">
+            <HiDotsVertical
+              className="self-center ml-auto w-8 h-8 mr-5 text-gray-600 cursor-pointer"
+              onClick={() => setPreference(!preference)}
+            />
+            {preference && <LanguagePreference />}
+          </div>
         </div>
         <div
           className="flex flex-col overflow-y-auto flex-grow  "
@@ -340,6 +479,9 @@ const MainChat = React.memo(({ user }) => {
                       key={index}
                       message={item.message}
                       time={item.timestamp}
+                      index={index}
+                      translatedText={item.translatedText}
+                      loadingTranslation={loadingTranslation[index]}
                     />
                   ) : (
                     <SendMsgComponent
@@ -416,43 +558,48 @@ const MainChat = React.memo(({ user }) => {
         // onEnter={() => setProfile(true)}
         // onExited={() => setProfile(false)}
       >
-          <div className=" w-96  " ref={nodeRef}>
-            <div className="flex p-6 flex-row bg-gray-400 drop-shadow-2xl justify-between">
-              <p className="text-lg font-semibold text-white">Profile</p>
-              <MdClose
-                className="text-white w-8 h-8 cursor-pointer"
-                onClick={() => setProfile(false)}
-              />
-            </div>
-            <div className="flex justify-center p-5 myclass">
-              <label htmlFor="profilePhotoUpload" className=" relative">
-                {user.thumbnail_url ? (
-                  <img
-                    src={`http://127.0.0.1:8000${user.thumbnail_url}`}
-                    className="w-48 h-48 rounded-full"
-                    alt="person_profile"
-                  />
-                ) : (
-                  <img
-                    src={`http://127.0.0.1:8000/media/avatars/blank.png`}
-                    className="w-48 h-48 rounded-full"
-                    alt="person_profile"
-                  />
-                )}
-              </label>
-            </div>
-            <div className="p-5 text-gray-700  ">
-              <p className="font-semibold">About</p>
-              <div className="flex flex-row mt-5">
-                <div className="w-full">
-                  <p className="drop-shadow-2xl">
-                    {about ? about : "You have not set your about"}
-                  </p>
-                </div>
+        <div className=" w-96  " ref={nodeRef}>
+          <div className="flex p-6 flex-row bg-gray-400 drop-shadow-2xl justify-between">
+            <p className="text-lg font-semibold text-white">Profile</p>
+            <MdClose
+              className="text-white w-8 h-8 cursor-pointer"
+              onClick={() => setProfile(false)}
+            />
+          </div>
+          <div className="flex justify-center p-5 myclass">
+            <label htmlFor="profilePhotoUpload" className=" relative">
+              {user.thumbnail_url ? (
+                <img
+                  src={`http://127.0.0.1:8000${user.thumbnail_url}`}
+                  className="w-48 h-48 rounded-full"
+                  alt="person_profile"
+                />
+              ) : (
+                <img
+                  src={`http://127.0.0.1:8000/media/avatars/blank.png`}
+                  className="w-48 h-48 rounded-full"
+                  alt="person_profile"
+                />
+              )}
+            </label>
+          </div>
+          <div className="p-5 text-gray-700  ">
+            <p className="font-semibold">About</p>
+            <div className="flex flex-row mt-5">
+              <div className="w-full">
+                <p className="drop-shadow-2xl">
+                  {about ? about : "You have not set your about"}
+                </p>
               </div>
             </div>
           </div>
-        </CSSTransition>
+        </div>
+      </CSSTransition>
+      {languagePanel ? (
+        <>
+          <SelectLanguagePreference />
+        </>
+      ) : null}
     </div>
   );
 });
