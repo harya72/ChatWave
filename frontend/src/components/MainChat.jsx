@@ -16,7 +16,10 @@ const MainChat = React.memo(({ user }) => {
   const [sent, setSent] = useState(false);
   const [profile, setProfile] = useState(false);
   const [about, setAbout] = useState("");
-  const [languageToTranslate, setLanguageToTranslate] = useState("en");
+  const [languageToTranslate, setLanguageToTranslate] = useState({
+    code: "en",
+    name: "English",
+  });
   const [preference, setPreference] = useState(false);
   const [languages, setLanguages] = useState([]);
   const nodeRef = useRef(null);
@@ -60,7 +63,7 @@ const MainChat = React.memo(({ user }) => {
       const response = await axios.post("http://127.0.0.1:5000/translate", {
         q: message,
         source: "auto",
-        target: languageToTranslate,
+        target: languageToTranslate.code,
         format: "text",
       });
 
@@ -184,10 +187,13 @@ const MainChat = React.memo(({ user }) => {
           {loadingTranslation ? (
             <ClipLoader color="#FF731D" />
           ) : (
-            <SiGoogletranslate
-              onClick={() => translateText(message, index)}
-              className="cursor-pointer w-8 h-8 text-gray-500"
-            />
+            <>
+              <SiGoogletranslate
+                onClick={() => translateText(message, index)}
+                className="cursor-pointer w-8 h-8 text-gray-500"
+              />
+              <p className="text-sm ml-2 text-gray-700">({languageToTranslate.name})</p>
+            </>
           )}
         </div>
       </div>
@@ -342,13 +348,18 @@ const MainChat = React.memo(({ user }) => {
             </label>
             <select
               id="countries"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              value={languageToTranslate}
-              onChange={(event) => setLanguageToTranslate(event.target.value)}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              value={`${languageToTranslate.code},${languageToTranslate.name}`}
+              onChange={(event) => {
+                const [code, name] = event.target.value.split(",");
+                setLanguageToTranslate({ code, name });
+              }}
             >
-              <option selected>Choose a language</option>
+              <option value="" disabled selected>
+                Choose a language
+              </option>
               {languages.map((lang) => (
-                <option key={lang.code} value={lang.code}>
+                <option key={lang.code} value={`${lang.code},${lang.name}`}>
                   {lang.name}
                 </option>
               ))}
