@@ -172,7 +172,7 @@ const Login = () => {
                           Password
                         </label>
                       </div>
-                      {showPassword ? (
+                      {showPassword && password ? (
                         <>
                           <FaEyeSlash
                             onClick={() => setShowPassword(!showPassword)}
@@ -180,11 +180,12 @@ const Login = () => {
                           />
                         </>
                       ) : (
-                        <>
+                        <>{password &&
                           <FaEye
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-2 top-3 h-6 w-6 text-gray-500 cursor-pointer"
                           />
+                        }
                         </>
                       )}
                     </div>
